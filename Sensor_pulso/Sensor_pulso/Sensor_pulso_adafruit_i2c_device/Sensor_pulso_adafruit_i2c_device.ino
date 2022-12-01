@@ -22,6 +22,7 @@ uint8_t buffer_leidos[16];
 #define FIFO_DATA          0x07
 
 //Configuration registers
+#define FIFO_CONFIGURATION 0x08
 #define MODE_CONFIGURATION 0x09
 #define SP02_CONFIGURATION 0x0A
 
@@ -56,16 +57,28 @@ void setup() {
 
 void loop() {
   realizar_medidas();
-  delay(100);
+  delay(1000);
 }
 
 void configuracion_pulse_sensor_inicial( Adafruit_I2CDevice i2c_dev ){
   //Para la escritura en los registros había que hacer lo siguiente:
   //Escribir dirección del registro. Escribir dato del registro.
-  uint8_t buffer[2];
+  /*
+   * byte ledBrightness = 60; //Options: 0=Off to 255=50mA -> CHECK
+byte sampleAverage = 4; //Options: 1, 2, 4, 8, 16, 32
+byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green -> CHECK
+byte sampleRate = 100; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200 
+int pulseWidth = 411; //Options: 69, 118, 215, 411 -> CHECK
+int adcRange = 4096; //Options: 2048, 4096, 8192, 16384-> CHECK
+   */
+  uint8_t buffer[5];
+  //buffer[0] = FIFO_CONFIGURATION
   buffer[0] = MODE_CONFIGURATION;
   buffer[1] = 0x02;
-  if(i2c_dev.write(buffer,2,true)){
+  buffer[2] = 0x01;//Como contamos con el autoincremento, se configura el siguiente registro, es decir el 0xA
+  buffer[3] = 0x00;//0x0B
+  buffer[4] = 0x1F;//0x0C
+  if(i2c_dev.write(buffer,5,true)){
     Serial.println("Se ha realizado la configuracion inicial ");
   }else{
     Serial.println("No se ha realizado la configuracion inicial ");
@@ -77,7 +90,8 @@ void realizar_medidas(){
   uint8_t reg_lectura[1] = {0x07};
   // Try to read 32 bytes
   //i2c_pulse_sensor.write_then_read(buffer_leidos, 32);
-  if(i2c_pulse_sensor.write_then_read(reg_lectura,1,buffer_leidos, 16, false)){
+  //La FIFO almacena 32 valores, de los cuales solo nos interesan el primer byte de cada grupo de 3 que se almacenan.
+  if(i2c_pulse_sensor.write_then_read(reg_lectura, 1, buffer_leidos, 16, false)){
     Serial.println("SE HA LEIDO");
   }else{
     Serial.println("NO SE HA LEIDO");
