@@ -1,32 +1,18 @@
-  #include <Arduino.h>
-  #include <Wire.h>
-  #include <PolledTimeout.h>
+/**
+  ******************************************************************************
+  * @file   I2C_Module.c
+  * @author Juan Morales Sáez (j.msaez@alumnos.upm.es)
+  * @brief  I2C Module.
+  *
+  * @note   HwIoT - Final Design - BetaFit Project.
+  *         This module manages the I2C bus.
+  ******************************************************************************
+*/
 
-// #include "I2C_Module.h"
+/* Includes ------------------------------------------------------------------*/
+#include "BetaFit_I2C_Module.h"             // Module header
 
-#define SLAVE_ADDR 0x3A
-
-void I2C_Device_Begin (void);
-void I2C_Device_End   (void);
-
-bool I2C_Device_Detected (uint8_t slave_address);
-
-void I2C_Device_Send_Data (uint8_t slave_address, uint8_t *slave_register, uint8_t *buffer);
-void I2C_Device_Read_Data (uint8_t slave_address, uint8_t *slave_register, uint8_t *buffer, uint8_t buffer_size);
-
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);
-  Serial.println("Inicialización de los recursos I2C");
-
-  I2C_Device_Begin();
-  I2C_Device_Detected(0x3A);
-  I2C_Device_End();
-}
-
-void loop() {
-}
-
+/* Private typedef -----------------------------------------------------------*/
 #define SDA_PIN 4
 #define SCL_PIN 5
 
@@ -41,9 +27,11 @@ void I2C_Device_Begin (void) {
   Wire.begin(SDA_PIN, SCL_PIN);
 }
 
+/*
 void I2C_Device_End (void) {
   Wire.end();
 }
+*/
 
 bool I2C_Device_Detected (uint8_t slave_address) {
 
@@ -65,7 +53,7 @@ void I2C_Device_Send_Data (uint8_t slave_address, uint8_t slave_register, uint8_
   Wire.write(buffer);
   
   // Finish the transmission.
-  Wire.endTransmission(true);
+  Wire.endTransmission();
 }
 
 void I2C_Device_Read_Data (uint8_t slave_address, uint8_t slave_register, uint8_t *buffer, uint8_t buffer_size) {
@@ -82,7 +70,7 @@ void I2C_Device_Read_Data (uint8_t slave_address, uint8_t slave_register, uint8_
   Wire.requestFrom(slave_address, buffer_size);  
 
   // Slave may send less than requested.
-  while(Wire.available())
+  while(Wire.available()) {
     
     // Receive a byte from the slave.
     buffer[buffer_index] = Wire.read();
@@ -92,5 +80,5 @@ void I2C_Device_Read_Data (uint8_t slave_address, uint8_t slave_register, uint8_
   }
 
   // Finish the transmission.
-  Wire.endTransmission(true);
+  Wire.endTransmission();
 }
