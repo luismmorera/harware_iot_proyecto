@@ -5,8 +5,8 @@
 #include <FS.h>
 
 #ifndef STASSID
-#define STASSID "Redmi Note 11"
-#define STAPSK  "Hd12345678"
+#define STASSID "a"
+#define STAPSK  "a"
 #endif
 
 
@@ -16,6 +16,9 @@ const char *password = STAPSK;
 // Objecto servidor
 ESP8266WebServer webServer(80);
 
+//Cookies
+#define USER_COOKIE  "CONNECTED" 
+#define DISCONNECT_COOKIE  "DISCONNECTED"
 
 void setup(void) {
 
@@ -48,21 +51,6 @@ void loop(void) {
   webServer.handleClient();
 }
 
-/*
-void write_in_flash(uint16_t mean){
-  File file = SPIFFS.open("/log.txt", "a");
-  
-  if (!file) {
-    Serial.println("Error opening file for writing");
-    return;
-  }
-  file.print(timeClient.getFormattedTime() + " -> "
-                                                  "Mean: " + String(mean) + ",\t"
-                                                  "Alarm: " + ((mean >= light_sensor_threshold)  ? "ON" : "OFF") + "\n");
-  file.close();
-}
-
-*/
 void wifiConnect(){
   Serial.begin(9600);
   
@@ -83,59 +71,75 @@ void wifiConnect(){
   Serial.println(WiFi.localIP());
 }
 
+
 void configure_WebServer () {
-  webServer.on("/web", rootHandler);
-  webServer.on("/web/dashboard.html", dashboardHandler);
-  webServer.on("/web/dashboard.js", dashboardJSHandler);
-  webServer.on("/web/dashboard.css", dashboardCSSHandler);
-  webServer.on("/web/usersettings.html", userSettingsHandler);
-  webServer.on("/web/generalsettings.html", generalSettingsHandler);
-  webServer.on("/web/data", dataHandler);
-  webServer.onNotFound(notFoundHandler);
-  
+  webServer.onNotFound([]() {                             // If the client requests any URI
+    if (!isExistingPath(webServer.uri()))                 // send it if it exists
+      notFoundHandler();                          // otherwise, respond with a 404 (Not Found) error
+  });
+  webServer.collectHeaders("Cookie");
   webServer.begin();
 }
 
 
-// Página inicial con el menú de opciones
-void rootHandler() {
-  
-  sendPage("/web/index.html", "text/html");
+//Existings paths handler
+bool isExistingPath(String path){
+  if(path == "/web" || path == "/web/" || path == "/web/index.html" || path == "/web/index"){
+    login();
+  }
+  else if(path == "/web/dashboard.html" || path == "/web/dashboard"){
+    sendPageWithAuthentication("/web/dashboard.html", "text/html");
+  }
+  else if(path == "/web/dashboard.js"){
+    sendPageWithAuthentication("/web/dashboard.js", "application/javascript");
+  }
+  else if(path == "/web/dashboard.css"){
+    sendPageWithAuthentication("/web/dashboard.css", "text/css");
+  }
+  else if(path == "/web/usersettings.html" || path == "/web/usersettings"){
+    sendPageWithAuthentication("/web/usersettings.html", "text/html");
+  }
+  else if(path == "/web/generalsettings.html" || path == "/web/generalsettings"){
+    sendPageWithAuthentication("/web/generalsettings.html", "text/html");
+  }
+  else if(path == "/web/data"){
+    sendPageWithAuthentication("/web/data_example.json", "application/json");
+  }
+  else{
+    return false;
+  }
+  return true;
 }
 
-void dashboardHandler(){
-  sendPage("/web/dashboard.html", "text/html");
+
+void sendPageWithAuthentication(String url, String type){
+  if(isAuthenticated()){
+    if(webServer.method() == HTTP_POST){
+      if (webServer.hasArg("logout")) {
+        Serial.println("LOG OUT");
+        webServer.sendHeader("Location", "/web");
+        webServer.sendHeader("Cache-Control", "no-cache");
+        webServer.sendHeader("Set-Cookie", "ESPSESSIONID=" DISCONNECT_COOKIE "; Max-Age=60; Path=/web");
+        webServer.send(301);
+        return;
+      }
+    }
+    sendPage(url, type);
+  }
+  else{
+    webServer.sendHeader("Location", "/web");
+    webServer.sendHeader("Cache-Control", "no-cache");
+    webServer.send(301);
+  }
 }
 
-void dashboardJSHandler(){
-  sendPage("/web/dashboard.js", "application/javascript");
-}
-
-void dashboardCSSHandler(){
-  sendPage("/web/dashboard.css", "text/css");
-}
-
-void userSettingsHandler(){
-  sendPage("/web/usersettings.html", "text/html");
-}
-
-void generalSettingsHandler(){
-  sendPage("/web/generalsettings.html", "text/html");
-}
-
-void dataHandler(){
-  File file = SPIFFS.open("/web/data_example.json", "r");
-  size_t sent = webServer.streamFile(file, "application/json");
-  file.close();
-}
 
 void sendPage(String url, String type){
   File file = SPIFFS.open(url, "r");
-  Serial.println(file.fullName());
-  size_t sent = webServer.streamFile(file, type);
+  Serial.printf("File sent: %s\n", file.fullName());
+  webServer.streamFile(file, type);
   file.close();
 }
-
 
 void notFoundHandler() {
   String msg = "Página no encontrada\n\n";
@@ -150,4 +154,33 @@ void notFoundHandler() {
     msg += " " + webServer.argName(i) + ": " + webServer.arg(i) + "\n";
   }
   webServer.send(404, "text/plain", msg);
+}
+
+void login(){
+  if (webServer.method() == HTTP_POST){
+    if (webServer.hasArg("uname") && webServer.hasArg("psw")) {
+      if (webServer.arg("uname") == "admin" &&  webServer.arg("psw") == "admin") {
+        webServer.sendHeader("Location", "/web/dashboard");
+        webServer.sendHeader("Cache-Control", "no-cache");
+        webServer.sendHeader("Set-Cookie", "ESPSESSIONID=" USER_COOKIE "; Max-Age=60; Path=/web");
+        webServer.send(301);
+        return;
+      }
+    }
+  }
+  sendPage("/web/index.html", "text/html");
+}
+
+bool isAuthenticated() {
+  if (webServer.hasHeader("Cookie")) {
+    Serial.print("Found cookie: ");
+    String cookie = webServer.header("Cookie");
+    Serial.println(cookie);
+    if (cookie.indexOf("ESPSESSIONID=" USER_COOKIE) != -1) {
+      Serial.println("Authentication Successful");
+      return true;
+    }
+  }
+  Serial.println("Authentication Failed");
+  return false;
 }
