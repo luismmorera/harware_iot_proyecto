@@ -1,0 +1,6 @@
+{
+  "alarmas" : {
+    "temperatura" : 30,
+    "frecuenciacardiaca" : 90
+  }
+}
