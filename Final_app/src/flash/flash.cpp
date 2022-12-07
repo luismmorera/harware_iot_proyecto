@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file   flash.h
+  * @file   flash.cpp
   * @author Pablo San Millán Fierro (pablo.sanmillanf@alumnos.upm.es)
   * @brief  Flash manager with SPI FFS.
   *
@@ -16,7 +16,7 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private variables----------------------------------------------------------*/
-
+static bool initialized = false;
 /* Function prototypes -------------------------------------------------------*/
 
 /* Functions -----------------------------------------------------------------*/
@@ -27,23 +27,28 @@
  *
  */
 void flashBegin(){
-  
-  //Configure File System
-  SPIFFS.begin();
+  if(!initialized){
+    initialized = true;
+    //Configure File System
+    SPIFFS.begin();
 
-  if (!SPIFFS.begin()) {
-    Serial.println("An Error has occurred while mounting SPIFFS");
-    return;
+    if (!SPIFFS.begin()) {
+      Serial.println("An Error has occurred while mounting SPIFFS");
+      return;
+    }
+    String str = "";
+    Dir dir = SPIFFS.openDir("/");
+    while (dir.next()) {
+        str += dir.fileName();
+        str += " -> ";
+        str += dir.fileSize();
+        str += " bytes\r\n";
+    }
+    
+#ifdef DEBUG
+    Serial.print(str);
+#endif
   }
-  String str = "";
-  Dir dir = SPIFFS.openDir("/");
-  while (dir.next()) {
-      str += dir.fileName();
-      str += " -> ";
-      str += dir.fileSize();
-      str += " bytes\r\n";
-  }
-  Serial.print(str);
 }
 
 /**
@@ -57,10 +62,16 @@ String readFile(String path){
   
   File file = SPIFFS.open(path, "r");
   if (!file) {
+#ifdef DEBUG
     Serial.printf("Error opening file '%s' for reading", path);
+#endif
     return "";
   }
+
+#ifdef DEBUG
   Serial.printf("Reading file opened: %s\n", file.fullName());
+#endif
+  
   while(file.available()){
     result += file.readString();
   }
@@ -81,11 +92,17 @@ bool writeFile(String path, String text){
   File file = SPIFFS.open(path, "w");
   
   if (!file) {
+#ifdef DEBUG
     Serial.printf("Error opening file '%s' for writing", path);
+#endif
     return false;
   }
   file.print(text);
+  
+#ifdef DEBUG
   Serial.printf("Writing file opened: %s\n", file.fullName());
+#endif
+
   file.close();
   return true;
 }

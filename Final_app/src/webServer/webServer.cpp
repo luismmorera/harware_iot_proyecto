@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file   webServer.h
+  * @file   webServer.cpp
   * @author Pablo San Millán Fierro (pablo.sanmillanf@alumnos.upm.es)
   * @brief  HTTP web server.
   *
@@ -14,8 +14,7 @@
 #include "webServer.h"             // Module header
 #include <ESP8266WebServer.h>      // Servidor web
 
-#define ARDUINOJSON_DECODE_UNICODE 1
-#include <ArduinoJson.h>
+#include "../jsonManager/jsonManager.h"
 #include "../flash/flash.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,6 +33,7 @@ static void sendPageWithAuthentication(String data, String type);
 static void sendResourceWithAuthentication(String data, String type);
 static bool checkLogout();
 static void login();
+static void manageFormCredentials();
 static void manageFormGeneralSettings();
 static void manageFormUserSettings();
 
@@ -45,6 +45,7 @@ static void manageFormUserSettings();
  *
  */
 void webServerBegin(){
+  flashBegin();
   webServer.onNotFound([]() {                             // If the client requests any URI
     if (!isExistingPath(webServer.uri()))                 // send it if it exists
       notFoundHandler();                          // otherwise, respond with a 404 (Not Found) error
@@ -93,6 +94,7 @@ static bool isExistingPath(String path){
   }
   else if(path == "/web/generalsettings.html" || path == "/web/generalsettings"){
     if(isAuthenticated()){
+      manageFormCredentials();
       manageFormGeneralSettings();
     }
     sendPageWithAuthentication(readFile("/web/generalsettings.html"), "text/html");
@@ -116,6 +118,32 @@ static bool isExistingPath(String path){
   else if(path == "/data/generalsettings"){
     sendResourceWithAuthentication(readFile("/data/generalsettings.json"), "application/json");
   }
+  
+  //-------------------------//
+  //------APP Responses------//
+  //-------------------------//
+  else if(path == "/app/credentials"){
+    if(isAuthenticated()){
+      manageFormCredentials();
+    }
+    else
+      webServer.send(401);
+  }
+  else if(path == "/app/usersettings"){
+    if(isAuthenticated()){
+      manageFormUserSettings();
+    }
+    else
+      webServer.send(401);
+  }
+  else if(path == "/app/generalsettings"){
+    if(isAuthenticated()){
+      manageFormGeneralSettings();
+    }
+    else
+      webServer.send(401);
+  }
+  
   else{
     return false;
   }
@@ -150,15 +178,23 @@ static void notFoundHandler() {
  */
 static bool isAuthenticated() {
   if (webServer.hasHeader("Cookie")) {
-    Serial.print("Found cookie: ");
     String cookie = webServer.header("Cookie");
+    
+#ifdef DEBUG
+    Serial.print("Found cookie: ");
     Serial.println(cookie);
+#endif
+
     if (cookie.indexOf("ESPSESSIONID=" USER_COOKIE) != -1) {
+#ifdef DEBUG
       Serial.println("Authentication Successful");
+#endif
       return true;
     }
   }
+#ifdef DEBUG
   Serial.println("Authentication Failed");
+#endif
   return false;
 }
 
@@ -215,7 +251,9 @@ static void sendResourceWithAuthentication(String data, String type){
 static bool checkLogout(){
   if(webServer.method() == HTTP_POST){
     if (webServer.hasArg("logout")) {
+#ifdef DEBUG
       Serial.println("LOG OUT");
+#endif
       webServer.sendHeader("Location", "/web");
       webServer.sendHeader("Cache-Control", "no-cache");
       webServer.sendHeader("Set-Cookie", "ESPSESSIONID=" DISCONNECT_COOKIE "; Max-Age=" COOKIE_TTL_SECS "; Path=/");
@@ -235,14 +273,7 @@ static bool checkLogout(){
 static void login(){
   if (webServer.method() == HTTP_POST){
     if (webServer.hasArg("uname") && webServer.hasArg("psw")) {
-      StaticJsonDocument<200> doc;
-      DeserializationError error = deserializeJson(doc, readFile("/data/credentials.json"));
-      if (error) { 
-        Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-        return; 
-      }
-      
-      if (webServer.arg("uname") == doc["usr"] &&  webServer.arg("psw") == doc["psw"]) {
+      if (compareCredentials(webServer.arg("uname"), webServer.arg("psw"))) {
         webServer.sendHeader("Location", "/web/dashboard");
         webServer.sendHeader("Cache-Control", "no-cache");
         webServer.sendHeader("Set-Cookie", "ESPSESSIONID=" USER_COOKIE "; Max-Age=" COOKIE_TTL_SECS "; Path=/");
@@ -257,43 +288,27 @@ static void login(){
 
 /**
  * Handler asociated to the HTTP general settings page. 
- * Manage the fields related to the credentials change and alarms.
+ * Manage the fields related to the credentials change.
+ *
+ */
+static void manageFormCredentials(){
+  if(webServer.method() == HTTP_POST){
+    if (webServer.hasArg("usr") && webServer.hasArg("psw")) {
+      setCredentials(webServer.arg("usr"), webServer.arg("psw"));
+    }
+  }
+}
+
+
+/**
+ * Handler asociated to the HTTP general settings page. 
+ * Manage the fields related to the alarms.
  *
  */
 static void manageFormGeneralSettings(){
   if(webServer.method() == HTTP_POST){
-    if (webServer.hasArg("usr") && webServer.hasArg("psw")) {
-      StaticJsonDocument<200> doc;
-      DeserializationError error = deserializeJson(doc, readFile("/data/credentials.json"));
-      if (error) { 
-        Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-        return; 
-      }
-      doc["usr"] = webServer.arg("usr");
-      doc["psw"] = webServer.arg("psw");
-      
-      String result;
-      serializeJson(doc, result);
-      writeFile("/data/credentials.json", result);
-      Serial.println("\n");
-      Serial.println(result);
-      Serial.println("\n");
-      Serial.println("Credentials Updated");
-    }
     if (webServer.hasArg("temperatura") && webServer.hasArg("frecuencia")) {
-      StaticJsonDocument<200> doc;
-      DeserializationError error = deserializeJson(doc, readFile("/data/generalsettings.json"));
-      if (error) { 
-        Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-        return; 
-      }
-      doc["alarmas"]["temperatura"] = webServer.arg("temperatura");
-      doc["alarmas"]["frecuenciacardiaca"] = webServer.arg("frecuencia");
-      
-      String result;
-      serializeJson(doc, result);
-      writeFile("/data/generalsettings.json", result);
-      Serial.println("Alarm thresholds Updated");
+      setGeneralSettings(webServer.arg("temperatura"), webServer.arg("frecuencia"));
     }
   }
 }
@@ -309,23 +324,11 @@ static void manageFormUserSettings(){
     if (webServer.hasArg("nombre") && webServer.hasArg("apellido1") &&  webServer.hasArg("apellido2")
                                    && webServer.hasArg("altura") && webServer.hasArg("peso")) {
       
-      StaticJsonDocument<300> doc;
-      DeserializationError error = deserializeJson(doc, readFile("/data/usersettings.json"));
-      if (error) { 
-        Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-        return; 
-      }
-      
-      doc["ID"]["nombre"] = webServer.arg("nombre");
-      doc["ID"]["apellido1"] = webServer.arg("apellido1");
-      doc["ID"]["apellido2"] = webServer.arg("apellido2");
-      doc["IMC"]["altura"] = webServer.arg("altura");
-      doc["IMC"]["peso"] = webServer.arg("peso");
-      
-      String result;
-      serializeJson(doc, result);
-      writeFile("/data/usersettings.json", result);
-      Serial.println("User Settings Updated");
+      setUserSettings(webServer.arg("nombre"), 
+                      webServer.arg("apellido1"), 
+                      webServer.arg("apellido2"), 
+                      webServer.arg("altura"), 
+                      webServer.arg("peso"));
     }
   }
 }

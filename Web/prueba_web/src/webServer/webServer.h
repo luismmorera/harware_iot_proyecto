@@ -21,6 +21,6 @@
   /* Exported macro ------------------------------------------------------------*/
   /* Exported Functions --------------------------------------------------------*/
   void webServerBegin();    //Called only once
-  void webServerLoop();     //Clled in every cycle
+  void webServerLoop();     //Called in every cycle
 
 #endif // __webServer_h

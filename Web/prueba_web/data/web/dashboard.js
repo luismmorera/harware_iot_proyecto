@@ -68,6 +68,9 @@
         row.insertCell().innerHTML = ('0' + date.getHours()).slice(-2) + ":" + ('0' + date.getMinutes()).slice(-2) + ":" + ('0' + date.getSeconds()).slice(-2);
         row.insertCell().innerHTML = (jsonObj.temperaturas[i].valor + " ºC");
         
+        if(jsonObj.temperaturas[i].alarma)
+          row.setAttribute("style", "background-color: #FF6961;");
+        
       }
       
       
@@ -87,6 +90,9 @@
         row.insertCell().innerHTML = date.getDate();
         row.insertCell().innerHTML = ('0' + date.getHours()).slice(-2) + ":" + ('0' + date.getMinutes()).slice(-2) + ":" + ('0' + date.getSeconds()).slice(-2);
         row.insertCell().innerHTML = (jsonObj.frecuenciacardiaca[i].valor + " ppmin");
+        
+        if(jsonObj.frecuenciacardiaca[i].alarma)
+          row.setAttribute("style", "background-color: #FF6961;");
       }
     }
   };
