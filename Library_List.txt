@@ -1,0 +1,13 @@
+Listado de Librerias Externas:
+
+// Sensor Temperatura
+Adafruit BusIO@1.14.1
+Adafruit MLX90614 Library@2.1.3
+
+// Modulo OLED
+Adafruit GFX Library@1.11.3
+Adafruit SSD1306@2.5.7
+
+// Acelerometro
+Adafruit Unified Sensor@1.1.6
+Adafruit MMA8451 Library@1.2.0
