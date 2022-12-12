@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file   wifiConnection.cpp
   * @author Pablo San Millán Fierro (pablo.sanmillanf@alumnos.upm.es)
-  * @brief  Wifi connection handler.
+  * @brief  WiFi connection handler.
   *
   * @note   HwIoT - Final Design - BetaFit Project.
   *         This module manages the ESP8266 WiFi connection and all the feautres 
@@ -12,33 +12,21 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "wifiConnection.h"             // Module header
-#include <ESP8266WiFi.h>      // Servidor web
+#include <ESP8266WiFi.h>      // WiFi
 
-#include "../webServer/webServer.h"
+
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables----------------------------------------------------------*/
 /* Function prototypes -------------------------------------------------------*/
 static void wifiConnect(String ssid, String password);
 /* Functions -----------------------------------------------------------------*/
-/**
- * Initializes the module. Called only once. 
- *
- */
-void wifiConnectionBegin(String ssid, String password){
-  // Da tiempo a que se inicialice el hardware de la Wifi
-  delay(10);
-  
-  wifiConnect(ssid, password);
-  
-  webServerBegin();
-}
 
 /**
  * Switch on WiFi hardware to enable WiFi connections.
  *
  */
-void wifiConnectionRestart(String ssid, String password){
+void wifiConnectionStart(String ssid, String password){
   WiFi.forceSleepWake();
 #ifdef DEBUG
   Serial.println("Iniciando la reconexión");
@@ -57,16 +45,6 @@ void wifiConnectionStop(){
 #ifdef DEBUG
   Serial.printf("Realizada la desconexión\n");
 #endif
-}
-
-
-/**
- * Allow normal module working
- * Should calle in every loop cycle.
- *
- */
-void wifiConnectionLoop(){
-  webServerLoop();
 }
 
 
