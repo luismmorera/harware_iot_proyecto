@@ -12,6 +12,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BetaFit_Accelerometer_Module.h" // Module header
 
+#include "BetaFit_SetpDetector_Module.h"
+
 /* Private typedef -----------------------------------------------------------*/
 #define X_THLD_VALUE_ON (0x01)
 #define Y_THLD_VALUE_ON (0x04)
@@ -25,7 +27,7 @@ uint8_t DevicePostion;
 /* Function prototypes -------------------------------------------------------*/
 void Accelerometer_Device_Begin (void);
 
-void Accelerometer_Get_Acceleration (float dataRegister[3]);
+void Accelerometer_Update_Acceleration_Data (void);
 
 uint8_t Accelerometer_Get_Position (void);
 
@@ -50,7 +52,7 @@ void Accelerometer_Device_Begin (void) {
     Serial.println(F("MMA8451 Accelerometer found!"));
   #endif
 
-  DevicePostion = OFF_POSITION;
+  DevicePostion = BETAFIT_OFF_POSITION;
 
   accelerometer.setRange(MMA8451_RANGE_2_G);
 
@@ -64,33 +66,38 @@ void Accelerometer_Device_Begin (void) {
   *
   * @retval None
   */
-void Accelerometer_Get_Acceleration (float dataRegister[3]) {
+void Accelerometer_Update_Acceleration_Data (void) {
+  
+  float x_axis = 0, y_axis = 0, z_axis = 0;
   
   // Get accelerometer data.
   sensors_event_t event; 
   accelerometer.getEvent(&event);
 
-  dataRegister[0] = event.acceleration.x;
-  dataRegister[1] = event.acceleration.y;
-  dataRegister[2] = event.acceleration.z;
+  x_axis = event.acceleration.x;
+  y_axis = event.acceleration.y;
+  z_axis = event.acceleration.z;
 
   #ifdef __BetaFit_Accelerometer_Module_Debug_Mode
     /* Display the results (acceleration is measured in m/s^2) */
-    Serial.print("X: \t"); Serial.print(dataRegister[0]); Serial.print("\t");
-    Serial.print("Y: \t"); Serial.print(dataRegister[1]); Serial.print("\t");
-    Serial.print("Z: \t"); Serial.print(dataRegister[2]); Serial.print("\t");
+    Serial.print("X: \t"); Serial.print(x_axis); Serial.print("\t");
+    Serial.print("Y: \t"); Serial.print(y_axis); Serial.print("\t");
+    Serial.print("Z: \t"); Serial.print(z_axis); Serial.print("\t");
     Serial.println("m/s^2 ");
   #endif
 
+  // Update acceleration data in the step detector.
+  StepDetectorUpdateAccelerationData (x_axis, y_axis, z_axis);
+
   // Determinate device position.
-  if ((dataRegister[2] > Z_THLD_VALUE_ON || dataRegister[1] > Y_THLD_VALUE_ON) && (dataRegister[1] < Y_THLD_VALUE_ON)) DevicePostion = ON_POSITION;
-  else DevicePostion = OFF_POSITION;
+  if ((z_axis > Z_THLD_VALUE_ON || y_axis > Y_THLD_VALUE_ON) && (x_axis < X_THLD_VALUE_ON)) DevicePostion = BETAFIT_ON_POSITION;
+  else DevicePostion = BETAFIT_OFF_POSITION;
 }
 
 uint8_t Accelerometer_Get_Position (void) {
   
   #ifdef __BetaFit_Accelerometer_Module_Debug_Mode
-    if (DevicePostion == ON_POSITION) Serial.println(F("User is looking at the device."));
+    if (DevicePostion == BETAFIT_ON_POSITION) Serial.println(F("User is looking at the device."));
     else Serial.println(F("User is NOT looking at the device."));
   #endif
 

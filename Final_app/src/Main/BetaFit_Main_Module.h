@@ -1,33 +1,35 @@
 /**
   ******************************************************************************
-  * @file   BetaFit_SetpDetector_Module.h
+  * @file   BetaFit_Main_Module.h
   * @author Juan Morales Sáez (j.msaez@alumnos.upm.es)
-  * @brief  Step Detector Module header.
+  * @brief  Mian Module header.
   *
   * @note   HwIoT - Final Design - BetaFit Project.
-  *         This module manages the step detection.
+  *         This module is the main module of the BetaFit Project.
   ******************************************************************************
 */
-
-#ifndef __BetaFit_SetpDetector_Module_h
-#define __BetaFit_SetpDetector_Module_h
-
-#define __BetaFit_SetpDetector_Module_Debug_Mode
+#ifndef __BetaFit_Main_Module_h
+#define __BetaFit_Main_Module_h
 
   /* Includes ------------------------------------------------------------------*/
-  #include <Arduino.h>
-
   /* Exported variables --------------------------------------------------------*/
   /* Exported types ------------------------------------------------------------*/
   /* Exported constants --------------------------------------------------------*/
-  #define BETAFIT_STEP_DETECTOR_DEFAULT_SENSITIVITY 20
-
   /* Exported macro ------------------------------------------------------------*/
   /* Exported Functions --------------------------------------------------------*/
-  extern void beginSetpDetector (void);
+   
+   /**
+    * @brief This function configure all the modules's resources.
+    *
+    * @retval none.
+    */
+    extern void BetaFit_Setup (void);
 
-  extern void StepDetectorUpdateAccelerationData (float x_axis, float y_axis, float z_axis);
+   /**
+    * @brief This function execute tyhe main function of the BetaFit.
+    *
+    * @retval none.
+    */
+    extern void BetaFit_Main  (void);
 
-  extern uint16_t getStepCount (void);
-
-#endif // __BetaFit_SetpDetector_Module_h
+#endif // __BetaFit_Main_Module_h

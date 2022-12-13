@@ -22,13 +22,15 @@
   /* Exported variables --------------------------------------------------------*/
   /* Exported types ------------------------------------------------------------*/
   /* Exported constants --------------------------------------------------------*/
-  #define ON_POSITION  0x01
-  #define OFF_POSITION 0x10
+  #define BETAFIT_ON_POSITION  0x01
+  #define BETAFIT_OFF_POSITION 0x10
   
   /* Exported macro ------------------------------------------------------------*/
   /* Exported Functions --------------------------------------------------------*/
-  extern void    Accelerometer_Device_Begin     (void);
-  extern void    Accelerometer_Get_Acceleration (float dataRegister[3]);
-  extern uint8_t Accelerometer_Get_Position     (void);
+  extern void Accelerometer_Device_Begin (void);
+
+  extern void Accelerometer_Update_Acceleration_Data (void);
+
+  extern uint8_t Accelerometer_Get_Position (void);
 
 #endif // __BetaFit_Accelerometer_Module_h

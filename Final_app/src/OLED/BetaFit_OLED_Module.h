@@ -14,13 +14,7 @@
 
   /* Includes ------------------------------------------------------------------*/
   #include <Arduino.h>
-  #include <SPI.h>
-  #include <Wire.h>
-  #include <Adafruit_GFX.h>
-  #include <Adafruit_SSD1306.h>
-
-  #include "BetaFit_Defintions.h"
-
+  
   /* Exported variables --------------------------------------------------------*/
   /* Exported types ------------------------------------------------------------*/
   /* Exported constants --------------------------------------------------------*/
@@ -36,5 +30,9 @@
   extern void OLED_Device_Diplay_Steps       (int step_number);
   extern void OLED_Device_Diplay_BodyHeat    (float body_heat);
   extern void OLED_Device_Diplay_HeartRate   (uint16_t heart_rate);
+
+  extern void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type);
+
+  extern void OLED_Device_Display_Measurement_Processing (uint8_t Measurement_Type);
 
 #endif // __BetaFit_OLED_Module_h

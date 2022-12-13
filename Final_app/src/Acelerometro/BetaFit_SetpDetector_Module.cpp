@@ -26,9 +26,7 @@ float AverageDataRegister[10];
 /* Function prototypes -------------------------------------------------------*/
 void beginSetpDetector (void);
 
-void storageAccelerationData (float AccelerationDataRegister[3]);
-
-void processStepDetectors (void);
+void StepDetectorUpdateAccelerationData (float x_axis, float y_axis, float z_axis);
 
 void setSensitivity (uint8_t sensitivity);
 
@@ -48,16 +46,16 @@ void beginSetpDetector (void) {
 
   stepCount = 0; AverageRegisterIndex = 0; DetectionPeriodCounter = 0;
 
-  StepDetectionSensitivity = Step_Detection_Default_Sensitivity;
+  StepDetectionSensitivity = BETAFIT_STEP_DETECTOR_DEFAULT_SENSITIVITY;
 
   DeviationValue = 0.0;
 }
 
-void storageAccelerationData (float AccelerationDataRegister[3]) {
+void StepDetectorUpdateAccelerationData (float x_axis, float y_axis, float z_axis) {
 
   float ActualAccelerationData = 0, PreviousAverage = 0;
 
-  ActualAccelerationData = abs(AccelerationDataRegister[0]) + abs(AccelerationDataRegister[1]) + abs(AccelerationDataRegister[2]);
+  ActualAccelerationData = abs(x_axis) + abs(y_axis) + abs(z_axis);
 
   // Calculate previous average.
   for (uint8_t i = 0; i < 10; i++)  PreviousAverage += AverageDataRegister[i];
@@ -74,26 +72,13 @@ void storageAccelerationData (float AccelerationDataRegister[3]) {
 
   if (DetectionPeriodCounter == 20) {
     
-    processStepDetectors();
+    if(DeviationValue > StepDetectionSensitivity) stepCount = stepCount + 1;
 
     DetectionPeriodCounter = 0;
     DeviationValue = 0;
   }
 
   else DetectionPeriodCounter = DetectionPeriodCounter + 1;
-}
-
-/**
-  * @brief  This function obtains the measurement taken by the accelerometer and 
-  *         conditions the measurement according to the parameters with which the 
-  *         device has been configured.
-  *
-  * @retval None
-  */
-void processStepDetectors (void) {
-
-  if(DeviationValue > StepDetectionSensitivity) stepCount  = stepCount + 1;
-
 }
 
 uint16_t getStepCount (void) {

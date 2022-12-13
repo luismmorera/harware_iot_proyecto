@@ -12,7 +12,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BetaFit_OLED_Module.h" // Module header
 
+// User header files.
+#include "BetaFit_Definitions.h" // Defintions module header.
 #include "BetaFit_OLED_Logos.h"  // Logos file.
+
+// Library header file.
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 /* Private typedef -----------------------------------------------------------*/
 #define SCREEN_WIDTH 128 // OLED display width,  in pixels
@@ -27,6 +35,8 @@
 #define OLED_RESET       -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C // I2C OLED MOdule Adress
 
+#define BETAFIT_SCREEN_TITLE_INIT   0
+#define BETAFIT_SCREEN_TITLE_FINISH 15
 
 /* Private variables----------------------------------------------------------*/
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -42,6 +52,9 @@ void OLED_Device_Diplay_Clock       (uint8_t hour, uint8_t minutes);
 void OLED_Device_Diplay_Steps       (int step_number);
 void OLED_Device_Diplay_BodyHeat    (float body_heat);
 void OLED_Device_Diplay_HeartRate   (uint16_t heart_rate);
+
+void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type);
+void OLED_Device_Display_Measurement_Processing (uint8_t Measurement_Type);
 
 void centerTextInfoSection  (int buffer_length, uint8_t size_factor);
 
@@ -65,6 +78,9 @@ void OLED_Device_Begin (void) {
 
   // Clear the buffer
   display.clearDisplay();
+
+  // Stop scrolling.
+  display.stopscroll();
 
   // Activate Extended Characters (CP437)
   display.cp437(true);
@@ -114,7 +130,7 @@ void OLED_Device_Diplay_Menu_Item (uint8_t muenu_item_id) {
       display.setCursor(19, 0);
       display.println(F("BetaFit"));
 
-      // Draw Blue screen section.
+      // Draw Info screen section.
       display.drawBitmap(0, 16, BETAFIT_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
       
       // Show the display buffer on the screen.
@@ -131,7 +147,7 @@ void OLED_Device_Diplay_Menu_Item (uint8_t muenu_item_id) {
       display.setCursor(34, 0);
       display.println(F("Clock"));
 
-      // Draw Blue screen section.
+      // Draw Info screen section.
       display.drawBitmap(0, 16, CLOCK_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
       
       // Show the display buffer on the screen.
@@ -148,7 +164,7 @@ void OLED_Device_Diplay_Menu_Item (uint8_t muenu_item_id) {
       display.setCursor(34, 0);
       display.println(F("Steps"));
 
-      // Draw Blue screen section.
+      // Draw Info screen section.
       display.drawBitmap(0, 16, STEPS_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
       
       // Show the display buffer on the screen.
@@ -165,7 +181,7 @@ void OLED_Device_Diplay_Menu_Item (uint8_t muenu_item_id) {
       display.setCursor(10, 0);
       display.println(F("Body Heat"));
 
-      // Draw Blue screen section.
+      // Draw Info screen section.
       display.drawBitmap(0, 16, THERMOMETER_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
       
       // Show the display buffer on the screen.
@@ -182,7 +198,7 @@ void OLED_Device_Diplay_Menu_Item (uint8_t muenu_item_id) {
       display.setCursor(7, 0);
       display.println(F("Heart Rate"));
 
-      // Draw Blue screen section.
+      // Draw Info screen section.
       display.drawBitmap(0, 16, HR_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
       
       // Show the display buffer on the screen.
@@ -199,7 +215,7 @@ void OLED_Device_Diplay_Menu_Item (uint8_t muenu_item_id) {
       display.setCursor(29, 0);
       display.println(F("Config"));
 
-      // Draw Blue screen section.
+      // Draw Info screen section.
       display.drawBitmap(0, 16, GEAR_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
       
       // Show the display buffer on the screen.
@@ -237,7 +253,7 @@ void OLED_Device_Diplay_Clock (uint8_t hour, uint8_t minutes) {
   display.setCursor(34, 0);
   display.println(F("Clock"));
 
-  // Draw Blue screen section.
+  // Draw Info screen section.
   display.setTextSize(3); // Draw 3X-scale text
   display.setTextColor(SSD1306_WHITE);
   centerTextInfoSection(sizeof(buffer), 3);
@@ -278,7 +294,7 @@ void OLED_Device_Diplay_Steps (int step_number) {
   display.setCursor(34, 0);
   display.println(F("Steps"));
 
-  // Draw Blue screen section.
+  // Draw Info screen section.
   display.setTextSize(3); // Draw 3X-scale text
   display.setTextColor(SSD1306_WHITE);
   centerTextInfoSection(sizeof(buffer), 3);
@@ -300,10 +316,15 @@ void OLED_Device_Diplay_BodyHeat (float body_heat) {
     
   char buffer[5];
 
-  sprintf(buffer, "%04.1fxC", body_heat);
+  if(body_heat > 100 || body_heat < 100) sprintf(buffer, "Error");
 
-  for (int i = 0; i < sizeof(buffer); i++){
-    if(buffer[i] == 'x') buffer[i] = 0xF8;
+  else {
+    
+    sprintf(buffer, "%04.1fxC", body_heat);
+
+    for (int i = 0; i < sizeof(buffer); i++){
+      if(buffer[i] == 'x') buffer[i] = 0xF8;
+    }
   }
 
   // Clear the display buffer
@@ -315,7 +336,7 @@ void OLED_Device_Diplay_BodyHeat (float body_heat) {
   display.setCursor(10, 0);
   display.println(F("Body Heat"));
 
-  // Draw Blue screen section.
+  // Draw Info screen section.
   display.setTextSize(3); // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);
   centerTextInfoSection(sizeof(buffer), 3);
@@ -337,13 +358,20 @@ void OLED_Device_Diplay_HeartRate (uint16_t heart_rate) {
   
   uint8_t buffer_length;
 
-  if (heart_rate < 10) buffer_length = 1;
-  else if (heart_rate < 100) buffer_length = 2;
-  else buffer_length = 3;
+  char buffer[5];
+
+  if(heart_rate == 1) sprintf(buffer, "Error");
+
+  else {
+    
+    if (heart_rate < 10) buffer_length = 1;
+    else if (heart_rate < 100) buffer_length = 2;
+    else buffer_length = 3;
+    
+    char buffer[buffer_length];
   
-  char buffer[buffer_length];
- 
-  sprintf(buffer, "%u", heart_rate);
+    sprintf(buffer, "%u", heart_rate);
+  }
 
   // Clear the display buffer
   display.clearDisplay();
@@ -354,11 +382,64 @@ void OLED_Device_Diplay_HeartRate (uint16_t heart_rate) {
   display.setCursor(7, 0);
   display.println(F("Heart Rate"));
 
-  // Draw Blue screen section.
+  // Draw Info screen section.
   display.setTextSize(3); // Draw 3X-scale text
   display.setTextColor(SSD1306_WHITE);
   centerTextInfoSection(sizeof(buffer), 3);
   display.print(buffer);
+
+  // Show the display buffer on the screen.
+  display.display();
+}
+
+void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type) {
+
+  // Clear the display buffer
+  display.clearDisplay();
+
+  // Draw Title screen section.
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+
+  if (Measurement_Type == BETAFIT_MODE_BH){
+    display.setCursor(10, 0);
+    display.println(F("Body Heat"));
+  }
+  
+  if (Measurement_Type == BETAFIT_MODE_HR) {
+    display.setCursor(7, 0);
+    display.println(F("Heart Rate"));
+  }
+
+  // Draw Info screen section.
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(13, 20);
+  display.println(F("Press to"));
+
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(19, 44);
+  display.println(F("measure"));
+
+  // Show the display buffer on the screen.
+  display.display();
+}
+
+void OLED_Device_Display_Measurement_Processing (uint8_t Measurement_Type) {
+
+  // Clear the display buffer
+  display.clearDisplay();
+
+  // Draw Title screen section.
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 0);
+  display.println(F("Measuring"));
+  
+  // Draw Info screen section.
+  if (Measurement_Type == BETAFIT_MODE_BH) display.drawBitmap(0, 16, THERMOMETER_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
+  if (Measurement_Type == BETAFIT_MODE_HR) display.drawBitmap(0, 16, HR_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
 
   // Show the display buffer on the screen.
   display.display();
