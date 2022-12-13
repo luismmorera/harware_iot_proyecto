@@ -24,7 +24,7 @@ bool BUTTON_LONG_PULSE_FLAG;
 
 #define BUTTON_PIN D6_PIN
 
-enum BUTTON_STATE {IDLE_STATE, RISING_EDGE, DEBOUNCED, SHORT_PULSE, LONG_PULSE};
+enum BUTTON_STATE {IDLE_STATE, FALLING_EDGE, DEBOUNCED, SHORT_PULSE, LONG_PULSE};
 
 /* Private variables----------------------------------------------------------*/
 static bool pulse_detected;
@@ -37,7 +37,7 @@ ICACHE_RAM_ATTR void buttonInterruptRoutine();
  *
  */
 void buttonStart(){
-  pinMode(BUTTON_PIN, INPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonInterruptRoutine, CHANGE);
   pulse_detected = false;
 }
@@ -54,21 +54,21 @@ void buttonStateMachine(){
   switch(state){
     case IDLE_STATE:
       if(pulse_detected){
-        state = RISING_EDGE;
+        state = FALLING_EDGE;
         ms = millis();
 #ifdef DEBUG
-        Serial.println("Flanco de subida detectado");
+        Serial.println("Flanco de bajada detectado");
 #endif
       }
       break;
-    case RISING_EDGE:
+    case FALLING_EDGE:
       if(ms + DEBOUNCE_TIME_MS <= millis()){
         ms = millis();
         state = DEBOUNCED;
       }
       break;
     case DEBOUNCED:
-      if(!digitalRead(BUTTON_PIN)){
+      if(digitalRead(BUTTON_PIN)){
         state = IDLE_STATE;
       }
       else{
@@ -77,7 +77,7 @@ void buttonStateMachine(){
       pulse_detected = false;
       break;
     case SHORT_PULSE:
-      if(pulse_detected == true && (!digitalRead(BUTTON_PIN))){
+      if(pulse_detected == true && (digitalRead(BUTTON_PIN))){
         state = IDLE_STATE;
 #ifdef DEBUG
         Serial.println("Pulsacion corta");
@@ -94,7 +94,7 @@ void buttonStateMachine(){
       }
       break;
     case LONG_PULSE:
-      if(pulse_detected == true && (!digitalRead(BUTTON_PIN))){
+      if(pulse_detected == true && (digitalRead(BUTTON_PIN))){
         state = IDLE_STATE;
         pulse_detected = false;
       }
