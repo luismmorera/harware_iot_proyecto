@@ -316,7 +316,8 @@ void OLED_Device_Diplay_BodyHeat (float body_heat) {
     
   char buffer[5];
 
-  if(body_heat > 100 || body_heat < 100) sprintf(buffer, "Error");
+  if (body_heat > 45 ) sprintf(buffer, "Danger");
+  if (body_heat < -15) sprintf(buffer, "Danger");
 
   else {
     

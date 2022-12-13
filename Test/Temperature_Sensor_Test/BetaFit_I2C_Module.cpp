@@ -67,7 +67,7 @@ void I2C_Device_Read_Data (uint8_t slave_address, uint8_t slave_register, uint8_
   Wire.write(slave_register);
   
   // Finish the transmission.
-  Wire.endTransmission(true);
+  Wire.endTransmission(false);
 
   // Request buffer_size bytes to the slave device with the desired slave_address.
   Wire.requestFrom(slave_address, buffer_size);  
