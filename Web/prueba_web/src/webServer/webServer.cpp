@@ -22,6 +22,9 @@
 #define USER_COOKIE         "CONNECTED" 
 #define DISCONNECT_COOKIE   "DISCONNECTED"
 #define COOKIE_TTL_SECS     "60"
+//Web or App
+#define WEB_INTERFACE		0
+#define APP_INTERFACE		1
 /* Private variables----------------------------------------------------------*/
 ESP8266WebServer webServer(80);
 
@@ -32,7 +35,7 @@ static bool isAuthenticated();
 static void sendPageWithAuthentication(String data, String type);
 static void sendResourceWithAuthentication(String data, String type);
 static bool checkLogout();
-static void login();
+static void login(int webOrApp);
 static void manageFormCredentials();
 static void manageFormGeneralSettings();
 static void manageFormUserSettings();
@@ -45,6 +48,8 @@ static void manageFormUserSettings();
  *
  */
 void webServerBegin(){
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
   flashBegin();
   webServer.onNotFound([]() {                             // If the client requests any URI
     if (!isExistingPath(webServer.uri()))                 // send it if it exists
@@ -80,8 +85,8 @@ static bool isExistingPath(String path){
   //---------------------//
   //--------Pages--------//
   //---------------------//
-  if(path == "/web" || path == "/web/" || path == "/web/index.html" || path == "/web/index"){
-    login();
+  if(path == "/web" || path == "/web/" || path == "/web/index.html" || path == "/web/index" ){
+    login(WEB_INTERFACE);
   }
   else if(path == "/web/dashboard.html" || path == "/web/dashboard"){
     sendPageWithAuthentication(readFile("/web/dashboard.html"), "text/html");
@@ -103,13 +108,14 @@ static bool isExistingPath(String path){
   //---------------------//
   //------Resources------//
   //---------------------//
-  else if(path == "/web/dashboard.js"){
+  else if(path == "/web/dashboard.js" ){
     sendResourceWithAuthentication(readFile("/web/dashboard.js"), "application/javascript");
   }
   else if(path == "/web/dashboard.css"){
     sendResourceWithAuthentication(readFile("/web/dashboard.css"), "text/css");
   }
-  else if(path == "/data/measurements"){
+  else if(path == "/data/measurements" || path == "/app/measurements"){
+	Serial.println("ENTRO RECURSO MEASUREMENT");
     sendResourceWithAuthentication(readFile("/data/measurements.json"), "application/json");
   }
   else if(path == "/data/usersettings"){
@@ -122,7 +128,17 @@ static bool isExistingPath(String path){
   //-------------------------//
   //------APP Responses------//
   //-------------------------//
-  else if(path == "/app/credentials"){
+  else if(path == "/app/login"){
+	  login(APP_INTERFACE);
+  }
+  else if(path == "/app/dashboard"){
+	if(isAuthenticated()){
+      manageFormCredentials();
+    }
+    else
+      webServer.send(401);
+  }
+  else if(path == "/app/password"){
     if(isAuthenticated()){
       manageFormCredentials();
     }
@@ -185,7 +201,7 @@ static bool isAuthenticated() {
     Serial.println(cookie);
 #endif
 
-    if (cookie.indexOf("ESPSESSIONID=" USER_COOKIE) != -1) {
+    if ((cookie.indexOf("ESPSESSIONID=" USER_COOKIE) != -1)||(cookie.indexOf("ESPSESSIONID=\""USER_COOKIE"\"") != -1)) {
 #ifdef DEBUG
       Serial.println("Authentication Successful");
 #endif
@@ -228,9 +244,11 @@ static void sendPageWithAuthentication(String data, String type){
  */
 static void sendResourceWithAuthentication(String data, String type){
   if(isAuthenticated()){
+	Serial.println("ENTRO RECURSO AUTENTICADO");
     webServer.send(200, type, data);
   }
   else{
+	Serial.println("NO ENTRO RECURSO AUTENTICADO");
     webServer.sendHeader("Location", "/web");
     webServer.sendHeader("Cache-Control", "no-cache");
     webServer.send(301);
@@ -270,11 +288,13 @@ static bool checkLogout(){
  * allow the user to access to the system.
  *
  */
-static void login(){
+static void login(int webOrApp){
   if (webServer.method() == HTTP_POST){
     if (webServer.hasArg("uname") && webServer.hasArg("psw")) {
       if (compareCredentials(webServer.arg("uname"), webServer.arg("psw"))) {
-        webServer.sendHeader("Location", "/web/dashboard");
+		if(webOrApp == WEB_INTERFACE){
+			webServer.sendHeader("Location", "/web/dashboard");
+		}
         webServer.sendHeader("Cache-Control", "no-cache");
         webServer.sendHeader("Set-Cookie", "ESPSESSIONID=" USER_COOKIE "; Max-Age=" COOKIE_TTL_SECS "; Path=/");
         webServer.send(301);
