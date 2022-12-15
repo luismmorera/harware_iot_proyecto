@@ -2,6 +2,7 @@
   ******************************************************************************
   * @file   webServer.h
   * @author Pablo San Millán Fierro (pablo.sanmillanf@alumnos.upm.es)
+  *			Héctor García Palencia (hector.garpalencia@alumnos.upm.es)
   * @brief  HTTP web server.
   *
   * @note   HwIoT - Final Design - BetaFit Project.
