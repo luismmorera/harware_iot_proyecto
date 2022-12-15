@@ -13,10 +13,13 @@
 #define __RTC_h
 
   /* Includes ------------------------------------------------------------------*/
-  #include <NTPClient.h> 
-  #include <WiFiUdp.h>
-  #include <DS3231> //This library asumes a slave address of 0x68
-  #include <Wire.h>
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include "BetaFit_I2C_Module.h"
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <TimeLib.h>
+#include "wifiConnection.h"
 
   /* Exported variables --------------------------------------------------------*/
   /* Exported types ------------------------------------------------------------*/
