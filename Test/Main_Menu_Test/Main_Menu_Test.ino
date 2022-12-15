@@ -1,25 +1,39 @@
 #include "BetaFit_Hardware.h"
 
-volatile int ISRCounter = 0;
-int counter = 0;
+#include "BetaFit_OLED_Module.h"
 
+#include "buttonHandler.h"
+
+#include "BetaFit_Definitions.h"
+
+uint8_t mode;
 void setup()
 {
-	pinMode(D6_PIN, INPUT_PULLUP);
-	Serial.begin(9600);
-	attachInterrupt(digitalPinToInterrupt(D6_PIN), debounceCount, FALLING);
+
+  mode = BETAFIT_MODE_INIT;
+
+  OLED_Device_Begin( );
+
+	buttonStart( );
+
+  OLED_Device_Diplay_Menu_Item(mode);
+
+  delay(1500);
 }
 
 void loop()
 {
-	if (counter != ISRCounter)
-	{
-		counter = ISRCounter;
-		Serial.println(counter);
-	}
-}
+  buttonStateMachine( );
 
-void debounceCount()
-{
-	ISRCounter++;
+  if ( BUTTON_SHORT_PULSE_FLAG ) {
+
+    BUTTON_SHORT_PULSE_FLAG = false;
+
+    if (mode == 0x05) mode = BETAFIT_MODE_CLOCK;
+    else mode = mode + 1;
+
+    OLED_Device_Diplay_Menu_Item(mode);
+
+  }
+
 }
