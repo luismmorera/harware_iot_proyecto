@@ -15,9 +15,9 @@
 #include "BetaFit_SetpDetector_Module.h"
 
 /* Private typedef -----------------------------------------------------------*/
-#define X_THLD_VALUE_ON 2
-#define Y_THLD_VALUE_ON 4
-#define Z_THLD_VALUE_ON 4
+#define X_THLD_VALUE_ON 0x01
+#define Y_THLD_VALUE_ON 0x04
+#define Z_THLD_VALUE_ON 0x04
 
 #define X_THLD_VALUE_MEAS_BH 1
 #define Y_THLD_VALUE_MEAS_BH 8
@@ -97,11 +97,11 @@ void Accelerometer_Update_Acceleration_Data (void) {
 
 
   // Determinate device position.
-  if (((z_axis > Z_THLD_VALUE_ON) || ((y_axis < - Y_THLD_VALUE_ON) && (y_axis > -8 ))) && ((x_axis < X_THLD_VALUE_ON) && (x_axis > - X_THLD_VALUE_ON))) {
+  if ((z_axis > Z_THLD_VALUE_ON  || y_axis > Y_THLD_VALUE_ON) && (x_axis < X_THLD_VALUE_ON)) {
     DevicePostion = BETAFIT_ON_POSITION;
-  }
+  } 
   
-  else if ((y_axis < - Y_THLD_VALUE_MEAS_BH) && ((x_axis < X_THLD_VALUE_MEAS_BH) && (x_axis > - X_THLD_VALUE_MEAS_BH)) && ((z_axis < Z_THLD_VALUE_MEAS_BH) && (z_axis > - Z_THLD_VALUE_MEAS_BH))) {
+  else if ((y_axis < - Y_THLD_VALUE_MEAS_BH) && ((x_axis < X_THLD_VALUE_MEAS_BH) && (x_axis > - X_THLD_VALUE_MEAS_BH)) && ((z_axis < Z_THLD_VALUE_MEAS_BH) && (z_axis > - Z_THLD_VALUE_MEAS_BH))){
     DevicePostion = BETAFIT_MEAS_BH_POSITION;
   }
   

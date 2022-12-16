@@ -97,7 +97,7 @@ void Accelerometer_Update_Acceleration_Data (void) {
 
 
   // Determinate device position.
-  if (((z_axis > Z_THLD_VALUE_ON) || ((y_axis < - Y_THLD_VALUE_ON) && (y_axis > -8 ))) && ((x_axis < X_THLD_VALUE_ON) && (x_axis > - X_THLD_VALUE_ON))) {
+  if ((z_axis > Z_THLD_VALUE_ON) && ((y_axis < - Y_THLD_VALUE_ON) && (y_axis > -8.5 )) && ((x_axis < X_THLD_VALUE_ON) && (x_axis > - X_THLD_VALUE_ON))) {
     DevicePostion = BETAFIT_ON_POSITION;
   }
   

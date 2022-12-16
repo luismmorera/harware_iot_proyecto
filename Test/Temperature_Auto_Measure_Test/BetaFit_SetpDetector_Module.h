@@ -1,29 +1,33 @@
 /**
   ******************************************************************************
-  * @file   I2C_Module.h
+  * @file   BetaFit_SetpDetector_Module.h
   * @author Juan Morales Sáez (j.msaez@alumnos.upm.es)
-  * @brief  I2C Module header.
+  * @brief  Step Detector Module header.
   *
   * @note   HwIoT - Final Design - BetaFit Project.
-  *         This module manages the I2C bus.
+  *         This module manages the step detection.
   ******************************************************************************
 */
-#ifndef __BetaFit_I2C_Module_h
-#define __BetaFit_I2C_Module_h
+
+#ifndef __BetaFit_SetpDetector_Module_h
+#define __BetaFit_SetpDetector_Module_h
+
+#define __BetaFit_SetpDetector_Module_Debug_Mode
 
   /* Includes ------------------------------------------------------------------*/
   #include <Arduino.h>
-  
+
   /* Exported variables --------------------------------------------------------*/
   /* Exported types ------------------------------------------------------------*/
   /* Exported constants --------------------------------------------------------*/
+  #define BETAFIT_STEP_DETECTOR_DEFAULT_SENSITIVITY 20
+
   /* Exported macro ------------------------------------------------------------*/
   /* Exported Functions --------------------------------------------------------*/
-  void I2C_Device_Begin (void);
+  extern void beginSetpDetector (void);
 
-  bool I2C_Device_Detected (uint8_t slave_address);
+  extern void StepDetectorUpdateAccelerationData (float x_axis, float y_axis, float z_axis);
 
-  void I2C_Device_Send_Data (uint8_t slave_address, uint8_t slave_register, uint8_t *buffer, uint8_t buffer_size);
-  void I2C_Device_Read_Data (uint8_t slave_address, uint8_t slave_register, uint8_t *buffer, uint8_t buffer_size);
+  extern uint16_t getStepCount (void);
 
-#endif // __BetaFit_I2C_Module_h
+#endif // __BetaFit_SetpDetector_Module_h

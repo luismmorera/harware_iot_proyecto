@@ -30,7 +30,6 @@
   
   /* Exported macro ------------------------------------------------------------*/
   /* Exported Functions --------------------------------------------------------*/
-    
     /**
       * @brief This function initialize the accelerometer resources and check that 
       *        the accelerometer is available.
