@@ -1,0 +1,11 @@
+{
+  "ID" : {
+    "nombre" : "Roberto Carlos",
+    "apellido1" : "García",
+    "apellido2" : "González"
+  },
+  "IMC": {
+    "altura" : 1.82,
+    "peso" : 70
+  }
+}
