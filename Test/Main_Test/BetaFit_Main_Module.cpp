@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file   BetaFit_Main_Module.cpp
   * @author Juan Morales Sáez (j.msaez@alumnos.upm.es)
-  * @brief  Mian Module.
+  * @brief  Main Module.
   *
   * @note   HwIoT - Final Design - BetaFit Project.
   *         This module is the main module of the BetaFit Project.
@@ -19,17 +19,35 @@
 #include "BetaFit_Temperature_Sensor_Module.h"
 #include "BetaFit_OLED_Module.h"
 
+#include "RTC.h"
+#include "wifiConnection.h"
+#include "buttonHandler.h"
+#include "pulseSensor.h"
+
 /* Private typedef -----------------------------------------------------------*/
-#define BetaFit_Main_Module_ConfigModeStatus_Active   0xFF
-#define BetaFit_Main_Module_ConfigModeStatus_Inactive 0x00
 
 /* Private variables----------------------------------------------------------*/
+
+//#ifndef STASSID
+//#define STASSID "HUAWEI-2.4G-A47a"
+//#define STAPSK "TZg9yYHB"
+//#endif
+
+#ifndef STASSID
+#define STASSID "EPR Paradox"
+#define STAPSK "92817249"
+#endif
+
+const char *ssid = STASSID;
+const char *password = STAPSK;
 
 // Private varibales for change between modes management.
 uint8_t BetaFit_Mode, Previous_BetaFit_Mode;
 
 // Private varibales for specific mode management.
-uint8_t lastMinutesValue, lastStepsValue, ConfigModeStatus, lastPositionValue;
+uint8_t lastMinutesValue, lastStepsValue, lastPositionValue;
+
+bool ConfigModeStatus;
 
 /* Function prototypes -------------------------------------------------------*/
 
@@ -71,13 +89,24 @@ void BetaFit_Setup (void) {
 
   lastStepsValue = 0x00;
 
-  ConfigModeStatus = BetaFit_Main_Module_ConfigModeStatus_Inactive;
+  ConfigModeStatus = false;
 
-  lastPositionValue = BETAFIT_ON_POSITION;
+  lastPositionValue = BETAFIT_OFF_POSITION;
 
+  RTC_Device_Begin( );
+
+  Accelerometer_Device_Begin( );
+
+  OLED_Device_Begin( );
+
+  Temperature_Sensor_Begin( );
+
+  buttonStart( );
+
+  init_hr_sensor( );
+
+  // Represent Logo.
   BetaFit_Init_Mode_Main( );
-
-  // Modules Begin( );
 }
 
 /**
@@ -87,26 +116,80 @@ void BetaFit_Setup (void) {
   */
 void BetaFit_Main (void) {
 
+  buttonStateMachine( );
+
   switch (BetaFit_Mode) {
 
     case BETAFIT_MODE_INIT:
-        BetaFit_Init_Mode_Main ( );
+
+      if (BUTTON_SHORT_PULSE_FLAG) {
+        // Deactivate flag.
+        BUTTON_SHORT_PULSE_FLAG = false;
+
+        BetaFit_Mode = BETAFIT_MODE_CLOCK;
+      }
+
+      // Don't care about long pulsations. Deactivate flag.
+      if (BUTTON_LONG_PULSE_FLAG) BUTTON_LONG_PULSE_FLAG = false;
+
+      BetaFit_Init_Mode_Main ( );
     break;
 
     case BETAFIT_MODE_CLOCK:
-        BetaFit_Clock_Mode_Main ( );
+
+      if (BUTTON_SHORT_PULSE_FLAG) {
+        // Deactivate flag.
+        BUTTON_SHORT_PULSE_FLAG = false;
+
+        BetaFit_Mode = BETAFIT_MODE_STEPS;  
+      }
+
+      // Don't care about long pulsations. Deactivate flag.
+      if (BUTTON_LONG_PULSE_FLAG) BUTTON_LONG_PULSE_FLAG = false;
+        
+      BetaFit_Clock_Mode_Main ( );
     break;
 
     case BETAFIT_MODE_STEPS:
-        BetaFit_Steps_Mode_Main ( );
+
+      if (BUTTON_SHORT_PULSE_FLAG) {
+        // Deactivate flag.
+        BUTTON_SHORT_PULSE_FLAG = false;
+
+        BetaFit_Mode = BETAFIT_MODE_BH;
+      }
+
+      // Don't care about long pulsations. Deactivate flag.
+      if (BUTTON_LONG_PULSE_FLAG) BUTTON_LONG_PULSE_FLAG = false;
+
+      BetaFit_Steps_Mode_Main ( );
     break;
 
     case BETAFIT_MODE_BH:
-        BetaFit_Body_Heat_Mode_Main ( );
+
+      if (BUTTON_SHORT_PULSE_FLAG) {
+        // Deactivate flag.
+        BUTTON_SHORT_PULSE_FLAG = false;
+
+        BetaFit_Mode = BETAFIT_MODE_HR;
+      }
+
+      // Don't care about long pulsations. Deactivate flag.
+      if (BUTTON_LONG_PULSE_FLAG) BUTTON_LONG_PULSE_FLAG = false;
+
+      BetaFit_Body_Heat_Mode_Main ( );
     break;
 
     case BETAFIT_MODE_HR:
-        BetaFit_Heart_Rate_Mode_Main ( );
+
+      if (BUTTON_SHORT_PULSE_FLAG) {
+        // Deactivate flag.
+        BUTTON_SHORT_PULSE_FLAG = false;
+
+        BetaFit_Mode = BETAFIT_MODE_CONF;
+      }
+
+      BetaFit_Heart_Rate_Mode_Main ( );
     break;
 
     case BETAFIT_MODE_CONF:
@@ -133,9 +216,9 @@ void BetaFit_Init_Mode_Main (void) {
   OLED_Device_Diplay_Menu_Item(BETAFIT_MODE_INIT);
 
   // Wait 3 seconds.
-  delay(3000);
+  delay(5000);
 
-  BetaFit_Mode = BETAFIT_MODE_BH;
+  BetaFit_Mode = BETAFIT_MODE_CLOCK;
 }
 
 /**
@@ -155,7 +238,8 @@ void BetaFit_Clock_Mode_Main (void) {
   if(Accelerometer_Get_Position() == BETAFIT_ON_POSITION) {
 
     // Get time data.
-    // GetTime();
+    currentMinutesValue = get_Minutes( );
+    currentHoursValue = get_Hours( );
 
     // Compare actual minutes value with the pervious one.
     // If these values are different, send new data to the OLED Display.
@@ -215,46 +299,29 @@ void BetaFit_Steps_Mode_Main (void) {
   */
 void BetaFit_Body_Heat_Mode_Main (void) {
 
-  if (BetaFit_Mode != Previous_BetaFit_Mode) {
-    
-    BetaFit_New_Mode_Begin( );
+  if (BetaFit_Mode != Previous_BetaFit_Mode) BetaFit_New_Mode_Begin( );
 
-    OLED_Device_Display_Measurement_Request(BETAFIT_MODE_BH);
-  }
-  
-    // Show in the display measuring process info.
-  OLED_Device_Display_Measurement_Processing(BETAFIT_MODE_BH);
-
-  // Turn temperature sensor on.
-  Temperature_Sensor_WakeUp( );
-
-  // Get the measure and represent it in the display.
-  OLED_Device_Diplay_BodyHeat( Get_Temperature_Celsius ( ) );
-
-  // Turn temperature sensor off.
-  Temperature_Sensor_Sleep ( );
-
-  delay(10000);
-
-  /*
-  if (long_keystroke_flag) {
-    
-    // Deactivate flag.
-    long_keystroke_flag = 0x00;
+  // User is looking at the device. If the OLED display is OFF, turn it ON.
+  if (Accelerometer_Get_Position( ) == BETAFIT_MEAS_BH_POSITION) {
 
     // Show in the display measuring process info.
     OLED_Device_Display_Measurement_Processing(BETAFIT_MODE_BH);
+
+    // Wait 500 ms to ensure that user is in the correct postion.
+    delay(500);
 
     // Turn temperature sensor on.
     Temperature_Sensor_WakeUp( );
 
     // Get the measure and represent it in the display.
-    OLED_Device_Diplay_BodyHeat( Get_Temperature_Celsius ( ) );
+    OLED_Device_Diplay_BodyHeat(Get_Temperature_Celsius( ));
 
     // Turn temperature sensor off.
     Temperature_Sensor_Sleep ( );
+
+    // Wait 5 s showing the last measurement.
+    delay(5000);
   }
-  */
 }
 
 /**
@@ -270,25 +337,24 @@ void BetaFit_Heart_Rate_Mode_Main (void) {
 
     OLED_Device_Display_Measurement_Request(BETAFIT_MODE_HR);
   }
-  /*
-  if (long_keystroke_flag) {
 
+  
+  if (BUTTON_LONG_PULSE_FLAG) {
     // Deactivate flag.
-    long_keystroke_flag = 0x00;
+    BUTTON_LONG_PULSE_FLAG = false;
 
     // Show in the display measuring process info.
     OLED_Device_Display_Measurement_Processing(BETAFIT_MODE_HR);
 
-    // Turn pulse sensor on.
-    Pulse_Sensor_WakeUp( );
-
     // Get the measure and represent it in the display.
-    OLED_Device_Diplay_HeartRate( Get_Heart_Rate ( ) );
+    OLED_Device_Diplay_HeartRate((uint16_t) realizar_medidas( ));
 
-    // Turn Pulse sensor off.
-    Pulse_Sensor_Sleep ( );
+    // Wait 5 s showing the last measurement.
+    delay(5000);
+
+    // Request for a new measuring.
+    OLED_Device_Display_Measurement_Request(BETAFIT_MODE_HR);
   }
-  */
 }
 
 /**
@@ -299,34 +365,46 @@ void BetaFit_Heart_Rate_Mode_Main (void) {
 void BetaFit_Configuration_Mode_Main (void) {
 
   if (BetaFit_Mode != Previous_BetaFit_Mode) BetaFit_New_Mode_Begin( );
-  /*
-  if (ConfigModeStatus == BetaFit_ConfigModeStatus_Inactive && long_keystroke_flag = 0xFF) {
 
+  if (BUTTON_SHORT_PULSE_FLAG) {
     // Deactivate flag.
-    long_keystroke_flag = 0x00;
+    BUTTON_SHORT_PULSE_FLAG = false;
 
-    // Update ConfigModeStatus.
-    ConfigModeStatus = BetaFit_ConfigModeStatus_Active;
+    BetaFit_Mode = BETAFIT_MODE_CLOCK;
 
-    // Turn on WiFi interface and web server.
-    wifiConnectionBegin( );
+    // If Wifi interface is on, turn off it.
+    if (ConfigModeStatus) {
+      // Update ConfigModeStatus.
+      ConfigModeStatus = false;
+
+      // Turn off WiFi interface and web server.
+      wifiConnectionStop( );
+    }
+  }
+  
+  if (BUTTON_LONG_PULSE_FLAG) {
+    // Deactivate flag.
+    BUTTON_LONG_PULSE_FLAG = false;
+    
+    if (ConfigModeStatus) {
+      // Update ConfigModeStatus.
+      ConfigModeStatus = false;
+
+      // Turn off WiFi interface and web server.
+      wifiConnectionStop( );
+    }
+
+    else {
+      // Update ConfigModeStatus.
+      ConfigModeStatus = true;
+
+      // Turn on WiFi interface and web server.
+      wifiConnectionStart(STASSID, STAPSK);
+    }
   }
 
-  if (ConfigModeStatus == BetaFit_ConfigModeStatus_Active && long_keystroke_flag = 0xFF) {
-
-    // Deactivate flag.
-    long_keystroke_flag = 0x00;
-
-    // Update ConfigModeStatus.
-    ConfigModeStatus = BetaFit_ConfigModeStatus_Inactive;
-
-    // Turn off WiFi interface and web server.
-    wifiConnectionStop( );
-  }
-
-  // If ConfigModeStatus is Active, handle web server.
-  if (ConfigModeStatus = BetaFit_ConfigModeStatus_Active) webServerLoop( );
-  */
+  // If ConfigModeStatus is true, handle web server.
+  //if (ConfigModeStatus) webServerLoop( );
 }
 
 
@@ -343,10 +421,10 @@ void BetaFit_New_Mode_Begin (void) {
   Previous_BetaFit_Mode = BetaFit_Mode;
 
   // Turn OLED display ON, if it is OFF.
-  if (lastPosition == BETAFIT_OFF_POSITION) {
+  if (lastPositionValue == BETAFIT_OFF_POSITION) {
     
-    // Update lastPosition.
-    lastPosition = BETAFIT_ON_POSITION;
+    // Update lastPositionValue.
+    lastPositionValue = BETAFIT_ON_POSITION;
 
     // Turn OLED display ON.
     OLED_Device_PowerOn( );
@@ -370,20 +448,20 @@ void BetaFit_Position_Management (void) {
   Accelerometer_Update_Acceleration_Data( );
 
   // User is looking at the device. If the OLED display is OFF, turn it ON.
-  if(Accelerometer_Get_Position( ) == BETAFIT_ON_POSITION && lastPosition == BETAFIT_OFF_POSITION) {
+  if(Accelerometer_Get_Position( ) == BETAFIT_ON_POSITION && lastPositionValue == BETAFIT_OFF_POSITION) {
     
-    // Update lastPosition.
-    lastPosition = BETAFIT_ON_POSITION;
+    // Update lastPositionValue.
+    lastPositionValue = BETAFIT_ON_POSITION;
     
     // Turn OLED display ON.
     OLED_Device_PowerOn( );
   }
 
   // User is NOT looking at the device. If the OLED display is ON, turn it OFF.
-  if(Accelerometer_Get_Position( ) == BETAFIT_OFF_POSITION && lastPosition == BETAFIT_ON_POSITION) {
+  if(Accelerometer_Get_Position( ) == BETAFIT_OFF_POSITION && lastPositionValue == BETAFIT_ON_POSITION) {
 
-    // Update lastPosition.
-    lastPosition = BETAFIT_OFF_POSITION;
+    // Update lastPositionValue.
+    lastPositionValue = BETAFIT_OFF_POSITION;
 
     // Turn OLED display OFF.
     OLED_Device_PowerOff( );

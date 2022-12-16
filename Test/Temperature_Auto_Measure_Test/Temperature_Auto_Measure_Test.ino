@@ -56,6 +56,8 @@ void loop() {
     
     delay(500);
 
+    Serial.println("Position detected");
+
     if (Accelerometer_Get_Position() == BETAFIT_MEAS_BH_POSITION) {
       
       OLED_Device_PowerOn();

@@ -1,37 +1,43 @@
 /**
   ******************************************************************************
-  * @file   BetaFit_Main_Module.h
-  * @author Juan Morales Sáez (j.msaez@alumnos.upm.es)
-  * @brief  Mian Module header.
+  * @file   buttonHandler.h
+  * @author Pablo San Millán Fierro (pablo.sanmillanf@alumnos.upm.es)
+  * @brief  Button interrupts handler.
   *
   * @note   HwIoT - Final Design - BetaFit Project.
-  *         This module is the main module of the BetaFit Project.
+  *         This module manages the button interrupts, filters the bounces and 
+  *         detects if is a short or long pulse.
   ******************************************************************************
 */
-#ifndef __BetaFit_Main_Module_h
-#define __BetaFit_Main_Module_h
+#ifndef __buttonHandler_h
+#define __buttonHandler_h
 
   /* Includes ------------------------------------------------------------------*/
   #include <Arduino.h>
 
   /* Exported variables --------------------------------------------------------*/
+    extern bool BUTTON_SHORT_PULSE_FLAG;
+    extern bool BUTTON_LONG_PULSE_FLAG;
+  
   /* Exported types ------------------------------------------------------------*/
   /* Exported constants --------------------------------------------------------*/
   /* Exported macro ------------------------------------------------------------*/
   /* Exported Functions --------------------------------------------------------*/
-   
+    
     /**
-      * @brief This function configure all the modules's resources.
+      * @brief This function initialize button resources.
       *
       * @retval none.
       */
-      extern void BetaFit_Setup (void);
+    extern void buttonStart (void);
 
     /**
-      * @brief This function execute tyhe main function of the BetaFit.
+      * @brief  This funtions runs the state machine that filters the button bounces 
+      *         and detects if is a short or long pulse.
+      *         It should be called in every loop cycle.
       *
       * @retval none.
       */
-      extern void BetaFit_Main (void);
+    extern void buttonStateMachine (void);
 
-#endif // __BetaFit_Main_Module_h
+#endif // __buttonHandler_h

@@ -11,3 +11,6 @@ Adafruit SSD1306@2.5.7
 // Acelerometro
 Adafruit Unified Sensor@1.1.6
 Adafruit MMA8451 Library@1.2.0
+
+//RTC
+Time@1.6.0

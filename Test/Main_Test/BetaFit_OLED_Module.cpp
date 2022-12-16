@@ -12,7 +12,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BetaFit_OLED_Module.h" // Module header
 
+// User header files.
+#include "BetaFit_Definitions.h" // Defintions module header.
 #include "BetaFit_OLED_Logos.h"  // Logos file.
+
+// Library header file.
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 /* Private typedef -----------------------------------------------------------*/
 #define SCREEN_WIDTH 128 // OLED display width,  in pixels
@@ -27,6 +35,8 @@
 #define OLED_RESET       -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C // I2C OLED MOdule Adress
 
+#define BETAFIT_SCREEN_TITLE_INIT   0
+#define BETAFIT_SCREEN_TITLE_FINISH 15
 
 /* Private variables----------------------------------------------------------*/
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -68,6 +78,9 @@ void OLED_Device_Begin (void) {
 
   // Clear the buffer
   display.clearDisplay();
+
+  // Stop scrolling.
+  display.stopscroll();
 
   // Activate Extended Characters (CP437)
   display.cp437(true);
@@ -303,10 +316,16 @@ void OLED_Device_Diplay_BodyHeat (float body_heat) {
     
   char buffer[5];
 
-  sprintf(buffer, "%04.1fxC", body_heat);
+  if (body_heat > 45 ) sprintf(buffer, "Danger");
+  if (body_heat < -15) sprintf(buffer, "Danger");
 
-  for (int i = 0; i < sizeof(buffer); i++){
-    if(buffer[i] == 'x') buffer[i] = 0xF8;
+  else {
+    
+    sprintf(buffer, "%04.1fxC", body_heat);
+
+    for (int i = 0; i < sizeof(buffer); i++){
+      if(buffer[i] == 'x') buffer[i] = 0xF8;
+    }
   }
 
   // Clear the display buffer
@@ -389,18 +408,13 @@ void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type) {
   // Draw Info screen section.
   display.setTextSize(2); // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(13, 16);
+  display.setCursor(13, 20);
   display.println(F("Press to"));
 
   display.setTextSize(2); // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(34, 32);
-  display.println(F("start"));
-
-  display.setTextSize(2); // Draw 2X-scale text
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(10, 48);
-  display.println(F("Measuring"));
+  display.setCursor(19, 44);
+  display.println(F("measure"));
 
   // Show the display buffer on the screen.
   display.display();
@@ -418,9 +432,7 @@ void OLED_Device_Display_Measurement_Processing (uint8_t Measurement_Type) {
   display.println(F("Measuring"));
   
   // Draw Info screen section.
-
-  if (Measurement_Type == BETAFIT_MODE_BH) display.drawBitmap(0, 16, THERMOMETER_LOGO_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
-
+  if (Measurement_Type == BETAFIT_MODE_BH) display.drawBitmap(0, 16, THERMOMETER_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
   if (Measurement_Type == BETAFIT_MODE_HR) display.drawBitmap(0, 16, HR_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
 
   // Show the display buffer on the screen.

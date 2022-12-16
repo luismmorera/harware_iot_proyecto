@@ -15,9 +15,13 @@
 #include "BetaFit_SetpDetector_Module.h"
 
 /* Private typedef -----------------------------------------------------------*/
-#define X_THLD_VALUE_ON (0x01)
-#define Y_THLD_VALUE_ON (0x04)
-#define Z_THLD_VALUE_ON (0x04)
+#define X_THLD_VALUE_ON 2
+#define Y_THLD_VALUE_ON 4
+#define Z_THLD_VALUE_ON 4
+
+#define X_THLD_VALUE_MEAS_BH 1
+#define Y_THLD_VALUE_MEAS_BH 8
+#define Z_THLD_VALUE_MEAS_BH 2
 
 /* Private variables----------------------------------------------------------*/
 Adafruit_MMA8451 accelerometer = Adafruit_MMA8451();
@@ -57,6 +61,8 @@ void Accelerometer_Device_Begin (void) {
   accelerometer.setRange(MMA8451_RANGE_2_G);
 
   accelerometer.setDataRate(MMA8451_DATARATE_50_HZ);
+
+  beginSetpDetector( );
 }
 
 /**
@@ -89,9 +95,20 @@ void Accelerometer_Update_Acceleration_Data (void) {
   // Update acceleration data in the step detector.
   StepDetectorUpdateAccelerationData (x_axis, y_axis, z_axis);
 
+
   // Determinate device position.
-  if ((z_axis > Z_THLD_VALUE_ON || y_axis > Y_THLD_VALUE_ON) && (x_axis < X_THLD_VALUE_ON)) DevicePostion = BETAFIT_ON_POSITION;
-  else DevicePostion = BETAFIT_OFF_POSITION;
+  if (((z_axis > Z_THLD_VALUE_ON) || ((y_axis < - Y_THLD_VALUE_ON) && (y_axis > -8 ))) && ((x_axis < X_THLD_VALUE_ON) && (x_axis > - X_THLD_VALUE_ON))) {
+    DevicePostion = BETAFIT_ON_POSITION;
+  }
+  
+  else if ((y_axis < - Y_THLD_VALUE_MEAS_BH) && ((x_axis < X_THLD_VALUE_MEAS_BH) && (x_axis > - X_THLD_VALUE_MEAS_BH)) && ((z_axis < Z_THLD_VALUE_MEAS_BH) && (z_axis > - Z_THLD_VALUE_MEAS_BH))) {
+    DevicePostion = BETAFIT_MEAS_BH_POSITION;
+  }
+  
+  else {
+    DevicePostion = BETAFIT_OFF_POSITION;
+  }
+
 }
 
 uint8_t Accelerometer_Get_Position (void) {

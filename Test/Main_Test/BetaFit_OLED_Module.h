@@ -14,13 +14,7 @@
 
   /* Includes ------------------------------------------------------------------*/
   #include <Arduino.h>
-  #include <SPI.h>
-  #include <Wire.h>
-  #include <Adafruit_GFX.h>
-  #include <Adafruit_SSD1306.h>
-
-  #include "BetaFit_Definitions.h"
-
+  
   /* Exported variables --------------------------------------------------------*/
   /* Exported types ------------------------------------------------------------*/
   /* Exported constants --------------------------------------------------------*/

@@ -12,14 +12,20 @@
 #define __BetaFit_Temperature_Sensor_Module_h
 
   /* Includes ------------------------------------------------------------------*/
-  #include "BetaFit_I2C_Module.h" // I2C Module header
-
   /* Exported variables --------------------------------------------------------*/
   /* Exported types ------------------------------------------------------------*/
   /* Exported constants --------------------------------------------------------*/
   /* Exported macro ------------------------------------------------------------*/
   /* Exported Functions --------------------------------------------------------*/
-  
+    
+    /**
+      * @brief This function initialize the I2C resources and check that the temperature
+      *        sensor is available.
+      *
+      * @retval none.
+      */
+    extern void Temperature_Sensor_Begin (void);
+
     /**
       * @brief This function get raw temperature data form the sensor and then calculate
       *        the temperature in degrees Celsius to one decimal place of accuracy.

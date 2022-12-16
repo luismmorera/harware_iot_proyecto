@@ -101,7 +101,7 @@ void Accelerometer_Update_Acceleration_Data (void) {
     DevicePostion = BETAFIT_ON_POSITION;
   } 
   
-  else if ((y_axis < - Y_THLD_VALUE_MEAS_BH) && ((x_axis < X_THLD_VALUE_MEAS_BH) || (x_axis > - X_THLD_VALUE_MEAS_BH)) && ((z_axis < Z_THLD_VALUE_MEAS_BH) || (z_axis > - Z_THLD_VALUE_MEAS_BH))){
+  else if ((y_axis < - Y_THLD_VALUE_MEAS_BH) && ((x_axis < X_THLD_VALUE_MEAS_BH) && (x_axis > - X_THLD_VALUE_MEAS_BH)) && ((z_axis < Z_THLD_VALUE_MEAS_BH) && (z_axis > - Z_THLD_VALUE_MEAS_BH))){
     DevicePostion = BETAFIT_MEAS_BH_POSITION;
   }
   

@@ -1,29 +1,26 @@
 /**
   ******************************************************************************
-  * @file   I2C_Module.h
-  * @author Juan Morales Sáez (j.msaez@alumnos.upm.es)
-  * @brief  I2C Module header.
+  * @file   wifiConnection.h
+  * @author Pablo San Millán Fierro (pablo.sanmillanf@alumnos.upm.es)
+  * @brief  WiFi connection handler.
   *
   * @note   HwIoT - Final Design - BetaFit Project.
-  *         This module manages the I2C bus.
+  *         This module manages the ESP8266 WiFi connection and all the feautres 
+  *         related to it: the web server. Based on ESP8266WiFi libray.
   ******************************************************************************
 */
-#ifndef __BetaFit_I2C_Module_h
-#define __BetaFit_I2C_Module_h
+#ifndef __wifiConnection_h
+#define __wifiConnection_h
 
   /* Includes ------------------------------------------------------------------*/
   #include <Arduino.h>
-  
+
   /* Exported variables --------------------------------------------------------*/
   /* Exported types ------------------------------------------------------------*/
   /* Exported constants --------------------------------------------------------*/
   /* Exported macro ------------------------------------------------------------*/
   /* Exported Functions --------------------------------------------------------*/
-  void I2C_Device_Begin (void);
+  void wifiConnectionStart(String ssid, String password);
+  void wifiConnectionStop();
 
-  bool I2C_Device_Detected (uint8_t slave_address);
-
-  void I2C_Device_Send_Data (uint8_t slave_address, uint8_t slave_register, uint8_t *buffer, uint8_t buffer_size);
-  void I2C_Device_Read_Data (uint8_t slave_address, uint8_t slave_register, uint8_t *buffer, uint8_t buffer_size);
-
-#endif // __BetaFit_I2C_Module_h
+#endif // __wifiConnection_h
