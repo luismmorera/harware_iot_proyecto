@@ -111,6 +111,8 @@ void BetaFit_Setup (void) {
 
   Temperature_Sensor_Begin( );
 
+  webServerBegin( );
+
   // Represent Logo.
   BetaFit_Init_Mode_Main( );
 }
@@ -332,7 +334,7 @@ void BetaFit_Body_Heat_Mode_Main (void) {
     // Get the measure and represent it in the display.
     OLED_Device_Diplay_BodyHeat(temperature);
 
-    setTemperatureEntry(Get_Actual_TimeStamp( ), temperature, false);
+    setTemperatureEntry(Get_Actual_TimeStamp( ), temperature, compareTemperature(temperature));
 
     // Turn temperature sensor off.
     Temperature_Sensor_Sleep ( );
@@ -371,7 +373,7 @@ void BetaFit_Heart_Rate_Mode_Main (void) {
     // Get the measure and represent it in the display.
     OLED_Device_Diplay_HeartRate(heart_rate);
 
-    if (heart_rate != 1) setHeartRateEntry(Get_Actual_TimeStamp( ), (float) heart_rate, false);
+    if (heart_rate != 1) setHeartRateEntry(Get_Actual_TimeStamp( ), (float) heart_rate, compareHeartRate(heart_rate));
 
     // Wait 5 s showing the last measurement.
     delay(5000);
@@ -417,8 +419,6 @@ void BetaFit_Configuration_Mode_Main (void) {
 
       // Turn on WiFi interface and web server.
       wifiConnectionStart(STASSID, STAPSK);
-
-      webServerBegin( );
     }
   }
 

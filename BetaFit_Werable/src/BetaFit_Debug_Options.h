@@ -14,7 +14,7 @@
   
   #ifdef BetaFit_Debug_Mode
     
-//    #define __BetaFit_Accelerometer_Module_Debug_Mode  
+//    #define __BetaFit_Accelerometer_Module_Debug_Mode
 //    #define __BetaFit_SetpDetector_Module_Debug_Mode
     #define __buttonHandler_Debug_Mode 
     #define __flash_Debug_Mode    

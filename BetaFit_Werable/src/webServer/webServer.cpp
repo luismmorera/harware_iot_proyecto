@@ -59,16 +59,13 @@ static void manageFormUserSettings();
  */
 void webServerBegin( ) {
 
-  #ifdef __webServer_Debug_Mode
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
-  #endif
-
   flashBegin();
+  
   webServer.onNotFound([]() {                             // If the client requests any URI
     if (!isExistingPath(webServer.uri()))                 // send it if it exists
       notFoundHandler();                          // otherwise, respond with a 404 (Not Found) error
   });
+  
   webServer.collectHeaders("Cookie");
   webServer.begin();
 }
