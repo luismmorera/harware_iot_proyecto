@@ -1,11 +1,11 @@
 {
   "ID" : {
-    "nombre" : "Roberto Carlos",
-    "apellido1" : "García",
-    "apellido2" : "González"
+    "nombre" : "-",
+    "apellido1" : "-",
+    "apellido2" : "-"
   },
   "IMC": {
-    "altura" : 1.82,
-    "peso" : 70
+    "altura" : 0,
+    "peso" : 0
   }
 }
