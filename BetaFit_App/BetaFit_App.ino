@@ -1,5 +1,9 @@
 // Include main module.
-#include "../Main/BetaFit_Main_Module.h"
+#include "src/Main/BetaFit_Main_Module.h"
+
+#include "src/BetaFit_Debug_Options.h"
+
+#define BetaFit_Debug_Mode
 
 void setup() {
   Serial.begin(115200);

@@ -371,7 +371,7 @@ void BetaFit_Heart_Rate_Mode_Main (void) {
     // Get the measure and represent it in the display.
     OLED_Device_Diplay_HeartRate(heart_rate);
 
-    if (heart_rate != 1) setHeartRateEntry(Get_Actual_TimeStamp( ), (float) heart_rate, false)
+    if (heart_rate != 1) setHeartRateEntry(Get_Actual_TimeStamp( ), (float) heart_rate, false);
 
     // Wait 5 s showing the last measurement.
     delay(5000);
@@ -488,10 +488,10 @@ void BetaFit_Position_Management (void) {
 }
 
 String Get_Actual_TimeStamp (void) {
-  String timeStamp;
+  char* timeStamp;
   
   // Time Stamp. Should be "YYYY-MM-DDTHH:MM:SS" format.
   sprintf(timeStamp, "%04u-%02u-%02uT%02u:%02u:%02", get_Year( ), get_Month( ), get_Day( ), get_Hours( ), get_Minutes( ), get_Seconds( ));
 
-  return timeStamp;
+  return (String) timeStamp;
 }
