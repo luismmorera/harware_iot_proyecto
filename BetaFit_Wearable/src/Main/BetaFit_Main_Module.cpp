@@ -70,6 +70,7 @@ void BetaFit_Heart_Rate_Mode_Main (void);
 
 void BetaFit_Configuration_Mode_Main (void);
 
+void BetaFit_User_Info_Mode_Main (void);
 
 /* Auxiliary Function prototypes ---------------------------------------------*/
 
@@ -193,7 +194,7 @@ void BetaFit_Main (void) {
         }
     break;
 
-    case BETAFIT_MODE_CONF:
+    case BETAFIT_MODE_USER_INFO:
       BetaFit_User_Info_Mode_Main ( );
 
       if (BUTTON_SHORT_PULSE_FLAG) {
@@ -360,6 +361,9 @@ void BetaFit_Body_Heat_Mode_Main (void) {
 
     // Wait 5 s showing the last measurement.
     delay(5000);
+    
+    // Request for a new measuring.
+    OLED_Device_Display_Measurement_Request(BETAFIT_MODE_BH);
   }
 }
 
@@ -408,7 +412,12 @@ void BetaFit_Heart_Rate_Mode_Main (void) {
   */
 void BetaFit_Configuration_Mode_Main (void) {
 
-  if (BetaFit_Mode != Previous_BetaFit_Mode) BetaFit_New_Mode_Begin( );
+  if (BetaFit_Mode != Previous_BetaFit_Mode){
+    BetaFit_New_Mode_Begin( );
+    
+    // Display WiFi Off icon.
+    OLED_Device_Display_Wifi_Off( );
+  } 
 
   if (BUTTON_LONG_PULSE_FLAG) {
     // Deactivate flag.
@@ -531,7 +540,7 @@ String Get_Actual_TimeStamp (void) {
   char timeStamp[20];
   
   // Time Stamp. Should be "YYYY-MM-DDTHH:MM:SS" format.
-  sprintf(timeStamp, "%04u-%02u-%02uT%02u:%02u:%02", get_Year( ), get_Month( ), get_Day( ), get_Hours( ), get_Minutes( ), get_Seconds( ));
+  sprintf(timeStamp, "%04u-%02u-%02uT%02u:%02u:%02u", get_Year( ), get_Month( ), get_Day( ), get_Hours( ), get_Minutes( ), get_Seconds( ));
 
   return String(timeStamp);
 }

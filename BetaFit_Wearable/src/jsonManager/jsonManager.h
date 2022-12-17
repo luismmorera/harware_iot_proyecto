@@ -29,6 +29,8 @@ void setCredentials(String usr, String psw);
 bool compareCredentials(String usr, String psw);
 void setGeneralSettings(String temperatura, String frecuencia);
 void setUserSettings(String nombre, String apellido1, String apellido2, String altura, String peso);
+String getUserName();
+float getUserIMC();
 bool compareTemperature(uint32_t temperature);
 bool compareHeartRate(uint32_t heartRate);
 

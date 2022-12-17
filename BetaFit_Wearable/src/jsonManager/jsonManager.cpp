@@ -9,7 +9,6 @@
   *         Based on ArduinoJson libray.
   ******************************************************************************
 */
-
 /* Includes ------------------------------------------------------------------*/
 #include "jsonManager.h"             // Module header
 
@@ -18,6 +17,7 @@
 #include "../flash/flash.h"
 
 /* Private typedef -----------------------------------------------------------*/
+#define MEASUREMENT_JSON_SIZE 4096
 /* Private variables----------------------------------------------------------*/
 /* Function prototypes -------------------------------------------------------*/
 static String fromMounthNumberToMounthString(uint8_t mounth);
@@ -31,7 +31,7 @@ static String fromMounthNumberToMounthString(uint8_t mounth);
  * @param alarma If temperature exceds temperature alarm threshold.
  */
 void setHeartRateEntry(String tiempo, float valor, bool alarma){
-  DynamicJsonDocument doc(2048);
+  DynamicJsonDocument doc(MEASUREMENT_JSON_SIZE);
   DeserializationError error = deserializeJson(doc, readFile("/data/measurements.json"));
   if (error) { 
 #ifdef __jsonManager_Debug_Mode
@@ -42,7 +42,7 @@ void setHeartRateEntry(String tiempo, float valor, bool alarma){
   
   JsonObject entry = doc["frecuenciacardiaca"].createNestedObject();
   entry["tiempo"] = tiempo;
-  entry["valor"] = valor;
+  entry["valor"] = ((int)(valor*100))/100.0;
   entry["alarma"] = alarma;
   
   String result;
@@ -63,7 +63,7 @@ void setHeartRateEntry(String tiempo, float valor, bool alarma){
  * @param alarma If temperature exceds temperature alarm threshold.
  */
 void setTemperatureEntry(String tiempo, float valor, bool alarma){
-  DynamicJsonDocument doc(2048);
+  DynamicJsonDocument doc(MEASUREMENT_JSON_SIZE);
   DeserializationError error = deserializeJson(doc, readFile("/data/measurements.json"));
   if (error) {
 #ifdef __jsonManager_Debug_Mode
@@ -74,7 +74,7 @@ void setTemperatureEntry(String tiempo, float valor, bool alarma){
   
   JsonObject entry = doc["temperaturas"].createNestedObject();
   entry["tiempo"] = tiempo;
-  entry["valor"] = valor;
+  entry["valor"] = ((int)(valor*100))/100.0;
   entry["alarma"] = alarma;
   
   String result;
@@ -82,7 +82,7 @@ void setTemperatureEntry(String tiempo, float valor, bool alarma){
   writeFile("/data/measurements.json", result);
   
 #ifdef __jsonManager_Debug_Mode
-  Serial.println("New temeprature entry added");
+  Serial.println("New temperature entry added");
 #endif
 }
 
@@ -97,7 +97,7 @@ void setTemperatureEntry(String tiempo, float valor, bool alarma){
  * @param valor The number of steps in a day.
  */
 void setStepsEntry(uint8_t mes, uint8_t dia, uint32_t valor){
-  DynamicJsonDocument doc(2048);
+  DynamicJsonDocument doc(MEASUREMENT_JSON_SIZE);
   DeserializationError error = deserializeJson(doc, readFile("/data/measurements.json"));
   if (error) { 
 #ifdef __jsonManager_Debug_Mode
@@ -239,6 +239,45 @@ void setUserSettings(String nombre, String apellido1, String apellido2, String a
 
 
 /**
+ * Gets user's name from the JSON usersettings.json located in "/data/usersettings.json"
+ *
+ * @return User's name
+ */
+String getUserName(){
+  StaticJsonDocument<300> doc;
+  DeserializationError error = deserializeJson(doc, readFile("/data/usersettings.json"));
+  if (error) { 
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
+    return " "; 
+  }
+  
+  return doc["ID"]["nombre"];
+}
+
+
+
+/**
+ * Gets user's IMC from the JSON usersettings.json located in "/data/usersettings.json"
+ *
+ * @return The calculated IMC.
+ */
+float getUserIMC(){
+  StaticJsonDocument<300> doc;
+  DeserializationError error = deserializeJson(doc, readFile("/data/usersettings.json"));
+  if (error) { 
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
+    return 0; 
+  }
+
+  return String(doc["IMC"]["peso"]).toFloat()/pow(String(doc["IMC"]["altura"]).toFloat(), 2);
+}
+
+
+/**
  * Compare temperature threshold with the JSON generalsettings.json located in "/data/generalsettings.json"
  *
  * @param temperature The temperature measured.
@@ -274,6 +313,9 @@ bool compareHeartRate(uint32_t heartRate){
   }
   return heartRate >= String(doc["alarmas"]["frecuenciacardiaca"]).toInt();
 }
+
+
+
 
 
 /**************************************************/

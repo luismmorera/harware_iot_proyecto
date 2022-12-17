@@ -23,7 +23,6 @@
 /* Function prototypes -------------------------------------------------------*/
 
 static void wifiConnect(String ssid, String password);
-
 /* Functions -----------------------------------------------------------------*/
 
 /**
@@ -51,6 +50,14 @@ void wifiConnectionStop(){
   #endif
 }
 
+/**
+ * Returns the IP the system is connected to.
+ *
+ * @return IP as a String
+ */
+String getIP(){
+  return WiFi.localIP().toString();
+}
 
 
 /**************************************************/

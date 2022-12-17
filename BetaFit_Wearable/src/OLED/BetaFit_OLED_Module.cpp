@@ -370,6 +370,7 @@ void OLED_Device_Diplay_BodyHeat (float body_heat) {
   display.display();
 }
 
+
 /**
   * @brief  This function sends to the OLED display the title and the data
   *         corresponding to the 'Heart Rate' working mode.
@@ -381,37 +382,40 @@ void OLED_Device_Diplay_BodyHeat (float body_heat) {
 void OLED_Device_Diplay_HeartRate (uint16_t heart_rate) {
 
   uint8_t buffer_length;
- 
 
-  if (heart_rate < 10) buffer_length = 1;
+  if (heart_rate == 1) buffer_length = 5;
+  else if (heart_rate < 10) buffer_length = 1;
   else if (heart_rate < 100) buffer_length = 2;
   else buffer_length = 3;
 
   char buffer[buffer_length];
 
-  sprintf(buffer, "%u", heart_rate);
+  if (heart_rate == 1) sprintf(buffer, "Error");
+  else sprintf(buffer, "%u", heart_rate);
 
   // Clear the display buffer
   display.clearDisplay();
 
- 
+
   // Draw Title screen section.
   display.setTextSize(2); // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(7, 0);
   display.println(F("Heart Rate"));
 
- 
   // Draw Info screen section.
   display.setTextSize(3); // Draw 3X-scale text
   display.setTextColor(SSD1306_WHITE);
   centerTextInfoSection(sizeof(buffer), 3);
   display.print(buffer);
- 
 
   // Show the display buffer on the screen.
   display.display();
+
 }
+
+
+
 
 /**
   * @brief  This function represent in the display the request meassage for a new measuring process.
@@ -572,7 +576,7 @@ void OLED_Device_Display_Wifi_On (String IPdir) {
   display.drawBitmap(0, 16, WIFI_ON_LOGO, WIFI_ICON_WIDTH, WIFI_ICON_HEIGHT, 1);
 
   // Center Text in info section.
-  uint8_t X_Cursor = ( 128 - ((IPdir.length( ))*6) ) / 2
+  uint8_t X_Cursor = ( 128 - ((IPdir.length( ))*6) ) / 2;
 
   // Print text in Info screen section.
   display.setTextSize(1); // Draw 1X-scale text
@@ -603,9 +607,6 @@ void OLED_Device_Display_User_Info (String UserName, float IMC) {
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(9, 0);
   display.println(F("User Info"));
-  
-  // Draw Info screen section.
-  display.drawBitmap(0, 16, WIFI_ON_LOGO, WIFI_ICON_WIDTH, WIFI_ICON_HEIGHT, 1);
 
   // Center Text in info section.
   uint8_t X_Cursor = 0, bufferLength = 0;

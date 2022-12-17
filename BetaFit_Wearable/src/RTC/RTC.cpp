@@ -14,6 +14,8 @@
 #include "RTC.h" // Module header
 
 // Impoorted Libraries
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <TimeLib.h>
@@ -38,7 +40,7 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 
 /* Function prototypes -------------------------------------------------------*/
-
+static uint8_t to_BCD(uint8_t valor);
 /* Functions -----------------------------------------------------------------*/
 
 bool RTC_Device_Begin (const char *ssid, const char *password) {
@@ -157,7 +159,14 @@ uint8_t get_Seconds(){
   return decenas*10 + unidades;
 }
 
-uint8_t to_BCD(uint8_t valor){
+
+
+/**
+  * @brief   Función que transforma un número decimal a un número BCD. 
+  * 
+  * @retval Numero en BCD
+  */
+static uint8_t to_BCD(uint8_t valor){
   uint8_t unidades;
   uint8_t decenas;
 

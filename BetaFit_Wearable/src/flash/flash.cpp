@@ -70,14 +70,18 @@ String readFile(String path){
     #endif
     return "";
   }
-
-  #ifdef __flash_Debug_Mode
-  Serial.printf("Reading file opened: %s\n", file.fullName());
-  #endif
   
   while(file.available()){
     result += file.readString();
   }
+  
+  #ifdef __flash_Debug_Mode
+    Serial.printf("Reading file opened: %s\n", file.fullName());
+    Serial.println("Content:");
+    Serial.println(result);
+    Serial.println("\n");
+  #endif
+  
   file.close();
   return result;
 }
@@ -104,6 +108,9 @@ bool writeFile(String path, String text){
   
   #ifdef __flash_Debug_Mode
     Serial.printf("Writing file opened: %s\n", file.fullName());
+    Serial.println("Content:\n");
+    Serial.println(text);
+    Serial.println("\n");
   #endif
 
   file.close();

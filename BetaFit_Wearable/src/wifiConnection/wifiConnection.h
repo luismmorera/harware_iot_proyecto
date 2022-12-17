@@ -26,5 +26,7 @@
     void wifiConnectionStart(String ssid, String password);
     
     void wifiConnectionStop();
+    
+    String getIP();
 
 #endif // __wifiConnection_h
