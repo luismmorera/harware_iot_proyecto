@@ -491,7 +491,7 @@ void OLED_Device_Display_Wifi_Off (void) {
   // Print text in Info screen section.
   display.setTextSize(1); // Draw 1X-scale text
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(25, 40);
+  display.setCursor(25, 56);
   display.println(F("WiFi Disabled"));
   
   // Show the display buffer on the screen.
@@ -522,7 +522,7 @@ void OLED_Device_Display_Wifi_Connecting (void) {
   // Print text in Info screen section.
   display.setTextSize(1); // Draw 1X-scale text
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(28, 40);
+  display.setCursor(28, 56);
   display.println(F("Conecting..."));
   
   // Show the display buffer on the screen.
@@ -558,7 +558,7 @@ void OLED_Device_Display_Wifi_On (String IPdir) {
   // Print text in Info screen section.
   display.setTextSize(1); // Draw 1X-scale text
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(X_Cursor, 40);
+  display.setCursor(X_Cursor, 56);
   display.println(IPdir);
   
   // Show the display buffer on the screen.
