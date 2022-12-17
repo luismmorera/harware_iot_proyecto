@@ -62,5 +62,12 @@
       * @brief    Función que accede al registro del RTC y devuelve los segundos.
       */
     extern uint8_t get_Seconds(void);
+	
+	/**
+	  * @brief   Función que transforma un número decimal a un número BCD. 
+	  * 
+	  * @retval Numero en BCD
+	  */
+	uint8_t to_BCD(uint8_t valor);
 
 #endif // __BetaFit_RTC_Module_h

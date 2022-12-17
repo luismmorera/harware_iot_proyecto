@@ -57,11 +57,18 @@ bool RTC_Device_Begin (const char *ssid, const char *password) {
 
   int epoch_time = timeClient.getEpochTime();
     
-  uint8_t buff_hora[] = {(uint8_t)second(epoch_time), (uint8_t)minute(epoch_time), (uint8_t)hour(epoch_time) + 1};
-  uint8_t buff_fecha[] = {(uint8_t)day(epoch_time), (uint8_t)month(epoch_time), (uint8_t)year(epoch_time)-208};
+  uint8_t buff_hora[] = {to_BCD(second(epoch_time)), to_BCD(minute(epoch_time)), to_BCD(hour(epoch_time) + 1)};
+  uint8_t buff_fecha[] = {to_BCD(day(epoch_time)), to_BCD(month(epoch_time)), to_BCD(year(epoch_time) -208)}; //-208
   
   #ifdef __BetaFit_RTC_Module_Debug_Mode
-    Serial.println("Epoch");
+	Serial.println("Epoch");
+
+	for (int i = 0; i<3; i++){
+		Serial.println(buff_hora[i]);
+	}
+	for (int j = 0; j<3; j++){
+		Serial.println(buff_fecha[j]);
+	}
   #endif
   
   I2C_Device_Send_Data(SLAVE_ADDR_RTC,SECONDS_REGISTER, buff_hora, sizeof(buff_hora));
@@ -74,54 +81,103 @@ bool RTC_Device_Begin (const char *ssid, const char *password) {
 }
 
 uint16_t get_Year(){
-  uint8_t anio[1] = {0};
-
+  byte anio[1] = {0};
+  uint8_t unidades;
+  uint8_t decenas;
+  
   I2C_Device_Read_Data(SLAVE_ADDR_RTC, YEAR_REGISTER, anio, sizeof(anio));
   
-  return anio[0] + 2000;
+  decenas = anio[0] >> 4;
+  unidades = anio[0] & 0x0F;
+  return (decenas*10 + unidades) + 2000;
 }
 
 //byte
 uint8_t get_Month(){
-  uint8_t mes[1] = {0};
-
+  byte mes[1] = {0};
+  uint8_t unidades;
+  uint8_t decenas;
+  
   I2C_Device_Read_Data(SLAVE_ADDR_RTC, MONTH_REGISTER, mes, sizeof(mes));
-
-  return mes[0];
+  
+  decenas = mes[0] >> 4;
+  unidades = mes[0] & 0x0F;
+  return decenas*10 + unidades;
 }
 
 //byte
 uint8_t get_Day(){
-  uint8_t dia[1] = {0};
-
+  byte dia[1] = {0};
+  uint8_t unidades;
+  uint8_t decenas;
+  
   I2C_Device_Read_Data(SLAVE_ADDR_RTC, DATE_REGISTER, dia, sizeof(dia));
-
-  return dia[0];
+  
+  decenas = (dia[0] >> 4) & 0x03;
+  unidades = dia[0] & 0x0F;
+  return decenas*10 + unidades;
 }
 
 //byte
 uint8_t get_Hours(){
-  uint8_t horas[1] = {0};
-
+  byte horas[1] = {0};
+  uint8_t unidades;
+  uint8_t decenas;
+  
   I2C_Device_Read_Data(SLAVE_ADDR_RTC, HOUR_REGISTER, horas, sizeof(horas));
-
-  return horas[0];
+  
+  decenas = horas[0] >> 4;
+  unidades = horas[0] & 0x0F;
+  return decenas*10 + unidades;
 }
 
 //byte
 uint8_t get_Minutes(){
-  uint8_t minuto[1] = {0};
-
+  byte minuto[1] = {0};
+  uint8_t unidades;
+  uint8_t decenas;
+  
   I2C_Device_Read_Data(SLAVE_ADDR_RTC, MINUTES_REGISTER, minuto, sizeof(minuto));
-
-  return minuto[0];
+  
+  decenas = minuto[0] >> 4;
+  unidades = minuto[0] & 0x0F;
+  return decenas*10 + unidades;
 }
 
 //byte
 uint8_t get_Seconds(){
-  uint8_t segundo[1] = {0};
-
+  byte segundo[1] = {0};
+  uint8_t unidades;
+  uint8_t decenas;
+  
   I2C_Device_Read_Data(SLAVE_ADDR_RTC, SECONDS_REGISTER, segundo, sizeof(segundo));
   
-  return segundo[0];
+  decenas = segundo[0] >> 4;
+  unidades = segundo[0] & 0x0F;
+  return decenas*10 + unidades;
+}
+
+uint8_t to_BCD(uint8_t valor){
+  uint8_t unidades;
+  uint8_t decenas;
+
+  uint8_t valor_devuelto;
+  
+  decenas = valor / 10;
+
+  if (decenas >= 1){
+    unidades = valor - decenas*10;
+  }else{
+    unidades = valor;
+  }
+  
+  #ifdef __BetaFit_RTC_Module_Debug_Mode
+	Serial.println(decenas);
+	Serial.print(unidades);
+	Serial.println("");
+  #endif
+  
+  valor_devuelto = (decenas << 4 | unidades);
+
+  return valor_devuelto;
 }
