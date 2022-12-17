@@ -11,24 +11,18 @@
 */
 
 /* Includes ------------------------------------------------------------------*/
-#include "jsonManager.h" // Module header
+#include "jsonManager.h"             // Module header
 
-// Imported Libraries
+#define ARDUINOJSON_DECODE_UNICODE 1
 #include <ArduinoJson.h>
-
-// BetaFit Libraries
 #include "../flash/flash.h"
 
 /* Private typedef -----------------------------------------------------------*/
-#define ARDUINOJSON_DECODE_UNICODE 1
-
 /* Private variables----------------------------------------------------------*/
-
 /* Function prototypes -------------------------------------------------------*/
 static String fromMounthNumberToMounthString(uint8_t mounth);
 
 /* Functions -----------------------------------------------------------------*/
-
 /**
  * Sets heart rate measurement entry in the JSON measurements.json located in "/data/measurements.json"
  *
@@ -40,9 +34,9 @@ void setHeartRateEntry(String tiempo, float valor, bool alarma){
   DynamicJsonDocument doc(2048);
   DeserializationError error = deserializeJson(doc, readFile("/data/measurements.json"));
   if (error) { 
-    #ifdef __jsonManager_Debug_Mode
-      Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-    #endif
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
     return; 
   }
   
@@ -55,9 +49,9 @@ void setHeartRateEntry(String tiempo, float valor, bool alarma){
   serializeJson(doc, result);
   writeFile("/data/measurements.json", result);
   
-  #ifdef __jsonManager_Debug_Mode
-    Serial.println("New heart rate entry added");
-  #endif
+#ifdef __jsonManager_Debug_Mode
+  Serial.println("New heart rate entry added");
+#endif
 }
 
 
@@ -72,9 +66,9 @@ void setTemperatureEntry(String tiempo, float valor, bool alarma){
   DynamicJsonDocument doc(2048);
   DeserializationError error = deserializeJson(doc, readFile("/data/measurements.json"));
   if (error) {
-    #ifdef __jsonManager_Debug_Mode
-      Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-    #endif
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
     return; 
   }
   
@@ -87,9 +81,9 @@ void setTemperatureEntry(String tiempo, float valor, bool alarma){
   serializeJson(doc, result);
   writeFile("/data/measurements.json", result);
   
-  #ifdef __jsonManager_Debug_Mode
-    Serial.println("New temeprature entry added");
-  #endif
+#ifdef __jsonManager_Debug_Mode
+  Serial.println("New temeprature entry added");
+#endif
 }
 
 
@@ -106,9 +100,9 @@ void setStepsEntry(uint8_t mes, uint8_t dia, uint32_t valor){
   DynamicJsonDocument doc(2048);
   DeserializationError error = deserializeJson(doc, readFile("/data/measurements.json"));
   if (error) { 
-    #ifdef __jsonManager_Debug_Mode
-      Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-    #endif
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
     return; 
   }
   
@@ -126,9 +120,9 @@ void setStepsEntry(uint8_t mes, uint8_t dia, uint32_t valor){
   serializeJson(doc, result);
   writeFile("/data/measurements.json", result);
   
-  #ifdef __jsonManager_Debug_Mode
-    Serial.println("New steps entry added");
-  #endif
+#ifdef __jsonManager_Debug_Mode
+  Serial.println("New steps entry added");
+#endif
 }
 
 
@@ -142,9 +136,9 @@ void setCredentials(String usr, String psw){
   StaticJsonDocument<200> doc;
   DeserializationError error = deserializeJson(doc, readFile("/data/credentials.json"));
   if (error) { 
-    #ifdef __jsonManager_Debug_Mode
-      Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-    #endif
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
     return; 
   }
   doc["usr"] = usr;
@@ -154,9 +148,9 @@ void setCredentials(String usr, String psw){
   serializeJson(doc, result);
   writeFile("/data/credentials.json", result);
   
-  #ifdef __jsonManager_Debug_Mode
-    Serial.println("Credentials Updated");
-  #endif
+#ifdef __jsonManager_Debug_Mode
+  Serial.println("Credentials Updated");
+#endif
 }
 
 
@@ -171,9 +165,9 @@ bool compareCredentials(String usr, String psw){
   StaticJsonDocument<200> doc;
   DeserializationError error = deserializeJson(doc, readFile("/data/credentials.json"));
   if (error) { 
-    #ifdef __jsonManager_Debug_Mode
-      Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-    #endif
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
     return false; 
   }
   return doc["usr"] == usr && doc["psw"] == psw;
@@ -190,9 +184,9 @@ void setGeneralSettings(String temperatura, String frecuencia){
   StaticJsonDocument<200> doc;
   DeserializationError error = deserializeJson(doc, readFile("/data/generalsettings.json"));
   if (error) { 
-    #ifdef __jsonManager_Debug_Mode
-      Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-    #endif
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
     return; 
   }
   doc["alarmas"]["temperatura"] = temperatura;
@@ -202,9 +196,9 @@ void setGeneralSettings(String temperatura, String frecuencia){
   serializeJson(doc, result);
   writeFile("/data/generalsettings.json", result);
   
-  #ifdef __jsonManager_Debug_Mode
-    Serial.println("Alarm thresholds Updated");
-  #endif
+#ifdef __jsonManager_Debug_Mode
+  Serial.println("Alarm thresholds Updated");
+#endif
 }
 
 
@@ -221,9 +215,9 @@ void setUserSettings(String nombre, String apellido1, String apellido2, String a
   StaticJsonDocument<300> doc;
   DeserializationError error = deserializeJson(doc, readFile("/data/usersettings.json"));
   if (error) { 
-    #ifdef __jsonManager_Debug_Mode
-      Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
-    #endif
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
     return; 
   }
   
@@ -237,9 +231,48 @@ void setUserSettings(String nombre, String apellido1, String apellido2, String a
   serializeJson(doc, result);
   writeFile("/data/usersettings.json", result);
   
-  #ifdef __jsonManager_Debug_Mode
-    Serial.println("User Settings Updated");
-  #endif
+#ifdef __jsonManager_Debug_Mode
+  Serial.println("User Settings Updated");
+#endif
+  
+}
+
+
+/**
+ * Compare temperature threshold with the JSON generalsettings.json located in "/data/generalsettings.json"
+ *
+ * @param temperature The temperature measured.
+ * @return true if the temperature is greater than the threshold.
+ */
+bool compareTemperature(uint32_t temperature){
+  StaticJsonDocument<200> doc;
+  DeserializationError error = deserializeJson(doc, readFile("/data/generalsettings.json"));
+  if (error) { 
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
+    return false; 
+  }
+  return temperature >= String(doc["alarmas"]["temperatura"]).toInt();
+}
+
+
+/**
+ * Compare heart rate threshold with the JSON generalsettings.json located in "/data/generalsettings.json"
+ *
+ * @param heartRate The heart rate measured.
+ * @return true if  the heart rate is greater than the threshold.
+ */
+bool compareHeartRate(uint32_t heartRate){
+  StaticJsonDocument<200> doc;
+  DeserializationError error = deserializeJson(doc, readFile("/data/generalsettings.json"));
+  if (error) { 
+#ifdef __jsonManager_Debug_Mode
+    Serial.printf("Error occurred during JSON deserialization: %s\n", error.c_str());
+#endif
+    return false; 
+  }
+  return heartRate >= String(doc["alarmas"]["frecuenciacardiaca"]).toInt();
 }
 
 

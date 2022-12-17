@@ -14,28 +14,22 @@
 #define __jsonManager_h
 
   /* Includes ------------------------------------------------------------------*/
-    #include <Arduino.h>
-
-    #include "../BetaFit_Debug_Options.h"
+  #include <Arduino.h>
+  #include "../BetaFit_Debug_Options.h"
 
   /* Exported variables --------------------------------------------------------*/
   /* Exported types ------------------------------------------------------------*/
   /* Exported constants --------------------------------------------------------*/
   /* Exported macro ------------------------------------------------------------*/
   /* Exported Functions --------------------------------------------------------*/
-    
-    void setHeartRateEntry(String tiempo, float valor, bool alarma);
-    
-    void setTemperatureEntry(String tiempo, float valor, bool alarma);
-    
-    void setStepsEntry(uint8_t mes, uint8_t dia, uint32_t valor);
-    
-    void setCredentials(String usr, String psw);
-    
-    bool compareCredentials(String usr, String psw);
-    
-    void setGeneralSettings(String temperatura, String frecuencia);
-    
-    void setUserSettings(String nombre, String apellido1, String apellido2, String altura, String peso);
+void setHeartRateEntry(String tiempo, float valor, bool alarma);
+void setTemperatureEntry(String tiempo, float valor, bool alarma);
+void setStepsEntry(uint8_t mes, uint8_t dia, uint32_t valor);
+void setCredentials(String usr, String psw);
+bool compareCredentials(String usr, String psw);
+void setGeneralSettings(String temperatura, String frecuencia);
+void setUserSettings(String nombre, String apellido1, String apellido2, String altura, String peso);
+bool compareTemperature(uint32_t temperature);
+bool compareHeartRate(uint32_t heartRate);
 
 #endif // __jsonManager_h

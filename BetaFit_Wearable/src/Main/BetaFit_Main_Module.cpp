@@ -34,8 +34,8 @@
 /* Private variables----------------------------------------------------------*/
 
 #ifndef STASSID
-#define STASSID "EPR Paradox"
-#define STAPSK "92817249"
+#define STASSID "MOVISTAR_D157"
+#define STAPSK "mgD9KG23ju3jhPz7Y5F6"
 #endif
 
 const char *ssid = STASSID;
@@ -90,7 +90,6 @@ String Get_Actual_TimeStamp (void);
 void BetaFit_Setup (void) {
 
   lastMinutesValue = 0x00;
-
   lastStepsValue = 0x00;
 
   ConfigModeStatus = false;
@@ -99,7 +98,7 @@ void BetaFit_Setup (void) {
 
   Accelerometer_Device_Begin( );
 
-  buttonStart( );
+  buttonStart();
 
   flashBegin( );
 
@@ -114,7 +113,7 @@ void BetaFit_Setup (void) {
   webServerBegin( );
 
   // Represent Logo.
-  BetaFit_Init_Mode_Main( );
+  BetaFit_Init_Mode_Main();
 }
 
 /**
@@ -128,23 +127,9 @@ void BetaFit_Main (void) {
 
   switch (BetaFit_Mode) {
 
-    case BETAFIT_MODE_INIT:
-
-      if (BUTTON_SHORT_PULSE_FLAG) {
-        // Deactivate flag.
-        BUTTON_SHORT_PULSE_FLAG = false;
-
-        BetaFit_Mode = BETAFIT_MODE_CLOCK;
-      }
-
-      // Don't care about long pulsations. Deactivate flag.
-      if (BUTTON_LONG_PULSE_FLAG) BUTTON_LONG_PULSE_FLAG = false;
-
-      BetaFit_Init_Mode_Main ( );
-    break;
-
     case BETAFIT_MODE_CLOCK:
-
+      BetaFit_Clock_Mode_Main ( );
+      
       if (BUTTON_SHORT_PULSE_FLAG) {
         // Deactivate flag.
         BUTTON_SHORT_PULSE_FLAG = false;
@@ -154,12 +139,11 @@ void BetaFit_Main (void) {
 
       // Don't care about long pulsations. Deactivate flag.
       if (BUTTON_LONG_PULSE_FLAG) BUTTON_LONG_PULSE_FLAG = false;
-        
-      BetaFit_Clock_Mode_Main ( );
     break;
 
     case BETAFIT_MODE_STEPS:
-
+      BetaFit_Steps_Mode_Main ( );
+      
       if (BUTTON_SHORT_PULSE_FLAG) {
         // Deactivate flag.
         BUTTON_SHORT_PULSE_FLAG = false;
@@ -169,11 +153,10 @@ void BetaFit_Main (void) {
 
       // Don't care about long pulsations. Deactivate flag.
       if (BUTTON_LONG_PULSE_FLAG) BUTTON_LONG_PULSE_FLAG = false;
-
-      BetaFit_Steps_Mode_Main ( );
     break;
 
     case BETAFIT_MODE_BH:
+      BetaFit_Body_Heat_Mode_Main ( );
 
       if (BUTTON_SHORT_PULSE_FLAG) {
         // Deactivate flag.
@@ -184,12 +167,11 @@ void BetaFit_Main (void) {
 
       // Don't care about long pulsations. Deactivate flag.
       if (BUTTON_LONG_PULSE_FLAG) BUTTON_LONG_PULSE_FLAG = false;
-
-      BetaFit_Body_Heat_Mode_Main ( );
     break;
 
     case BETAFIT_MODE_HR:
-
+      BetaFit_Heart_Rate_Mode_Main ( );
+      
       if (BUTTON_SHORT_PULSE_FLAG) {
         // Deactivate flag.
         BUTTON_SHORT_PULSE_FLAG = false;
@@ -197,7 +179,6 @@ void BetaFit_Main (void) {
         BetaFit_Mode = BETAFIT_MODE_CONF;
       }
 
-      BetaFit_Heart_Rate_Mode_Main ( );
     break;
 
     case BETAFIT_MODE_CONF:
@@ -224,8 +205,9 @@ void BetaFit_Init_Mode_Main (void) {
   OLED_Device_Diplay_Menu_Item(BETAFIT_MODE_INIT);
 
   // Wait 3 seconds.
-  delay(5000);
+  delay(3000);
 
+  Previous_BetaFit_Mode = BETAFIT_MODE_INIT;
   BetaFit_Mode = BETAFIT_MODE_CLOCK;
 }
 
@@ -238,7 +220,12 @@ void BetaFit_Clock_Mode_Main (void) {
   
   uint8_t currentMinutesValue = 0, currentHoursValue = 0;
 
-  if (BetaFit_Mode != Previous_BetaFit_Mode) BetaFit_New_Mode_Begin( );
+  if (BetaFit_Mode != Previous_BetaFit_Mode){
+    BetaFit_New_Mode_Begin( );
+    
+    // Send new data to the OLED Display.
+    OLED_Device_Diplay_Clock(get_Hours(), get_Minutes());
+  } 
 
   BetaFit_Position_Management( );
 
@@ -280,7 +267,12 @@ void BetaFit_Steps_Mode_Main (void) {
 
   uint8_t currentStepsValue = 0;
   
-  if (BetaFit_Mode != Previous_BetaFit_Mode) BetaFit_New_Mode_Begin( );
+  if (BetaFit_Mode != Previous_BetaFit_Mode){
+    BetaFit_New_Mode_Begin( );
+    
+    // Send new data to the OLED Display.
+    OLED_Device_Diplay_Steps (getStepCount());
+  } 
 
   BetaFit_Position_Management( );
 
@@ -314,8 +306,13 @@ void BetaFit_Steps_Mode_Main (void) {
 void BetaFit_Body_Heat_Mode_Main (void) {
 
   float temperature;
+  
+  Accelerometer_Update_Acceleration_Data( );
 
-  if (BetaFit_Mode != Previous_BetaFit_Mode) BetaFit_New_Mode_Begin( );
+  if (BetaFit_Mode != Previous_BetaFit_Mode){
+    BetaFit_New_Mode_Begin( );
+    OLED_Device_Display_Measurement_Request(BETAFIT_MODE_BH);
+  } 
 
   // User is looking at the device. If the OLED display is OFF, turn it ON.
   if (Accelerometer_Get_Position( ) == BETAFIT_MEAS_BH_POSITION) {
@@ -488,10 +485,10 @@ void BetaFit_Position_Management (void) {
 }
 
 String Get_Actual_TimeStamp (void) {
-  char* timeStamp;
+  char timeStamp[20];
   
   // Time Stamp. Should be "YYYY-MM-DDTHH:MM:SS" format.
   sprintf(timeStamp, "%04u-%02u-%02uT%02u:%02u:%02", get_Year( ), get_Month( ), get_Day( ), get_Hours( ), get_Minutes( ), get_Seconds( ));
 
-  return (String) timeStamp;
+  return String(timeStamp);
 }

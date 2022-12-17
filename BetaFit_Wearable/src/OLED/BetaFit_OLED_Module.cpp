@@ -356,35 +356,40 @@ void OLED_Device_Diplay_BodyHeat (float body_heat) {
   * @retval None
   */
 void OLED_Device_Diplay_HeartRate (uint16_t heart_rate) {
-  
+
   uint8_t buffer_length;
+ 
 
   if (heart_rate < 10) buffer_length = 1;
   else if (heart_rate < 100) buffer_length = 2;
   else buffer_length = 3;
-  
+
   char buffer[buffer_length];
- 
+
   sprintf(buffer, "%u", heart_rate);
 
   // Clear the display buffer
   display.clearDisplay();
 
+ 
   // Draw Title screen section.
   display.setTextSize(2); // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(7, 0);
   display.println(F("Heart Rate"));
 
+ 
   // Draw Info screen section.
   display.setTextSize(3); // Draw 3X-scale text
   display.setTextColor(SSD1306_WHITE);
   centerTextInfoSection(sizeof(buffer), 3);
   display.print(buffer);
+ 
 
   // Show the display buffer on the screen.
   display.display();
 }
+
 
 void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type) {
 
@@ -398,18 +403,26 @@ void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type) {
   if (Measurement_Type == BETAFIT_MODE_BH){
     display.setCursor(10, 0);
     display.println(F("Body Heat"));
+    
+    // Draw Info screen section.
+    display.setTextSize(2); // Draw 2X-scale text
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(13, 20);
+    display.println(F("Place to"));
   }
   
   if (Measurement_Type == BETAFIT_MODE_HR) {
     display.setCursor(7, 0);
     display.println(F("Heart Rate"));
+    
+    // Draw Info screen section.
+    display.setTextSize(2); // Draw 2X-scale text
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(13, 20);
+    display.println(F("Press to"));
   }
 
-  // Draw Info screen section.
-  display.setTextSize(2); // Draw 2X-scale text
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(13, 20);
-  display.println(F("Press to"));
+  
 
   display.setTextSize(2); // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);

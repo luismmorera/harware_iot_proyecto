@@ -8,7 +8,6 @@
   *         This module manages the OLED module.
   ******************************************************************************
 */
-
 /* Includes ------------------------------------------------------------------*/
 #include "BetaFit_Accelerometer_Module.h" // Module header
 

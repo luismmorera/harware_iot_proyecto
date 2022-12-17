@@ -9,7 +9,6 @@
   *         detects if is a short or long pulse.
   ******************************************************************************
 */
-
 /* Includes ------------------------------------------------------------------*/
 #include "buttonHandler.h" // Module header
 
@@ -21,7 +20,7 @@ bool BUTTON_SHORT_PULSE_FLAG;
 bool BUTTON_LONG_PULSE_FLAG;
 
 /* Private typedef -----------------------------------------------------------*/
-#define DEBOUNCE_TIME_MS  50
+#define DEBOUNCE_TIME_MS  30
 #define LONG_PULSE_MS     700
 
 #define BUTTON_PIN D6_PIN
