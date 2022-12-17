@@ -60,6 +60,8 @@ void OLED_Device_Display_Wifi_On (String IPdir);
 void OLED_Device_Display_Wifi_Connecting (void);
 void OLED_Device_Display_Wifi_Off (void);
 
+void OLED_Device_Display_User_Info (String UserName, float IMC);
+
 void centerTextInfoSection  (int buffer_length, uint8_t size_factor);
 
 /* Functions -----------------------------------------------------------------*/
@@ -221,6 +223,23 @@ void OLED_Device_Diplay_Menu_Item (uint8_t muenu_item_id) {
 
       // Draw Info screen section.
       display.drawBitmap(0, 16, GEAR_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
+      
+      // Show the display buffer on the screen.
+      display.display();
+    break;
+
+    case BETAFIT_MODE_USER_INFO:
+      // Clear the buffer
+      display.clearDisplay();
+
+      // Draw Title screen section.
+      display.setTextSize(2); // Draw 2X-scale text
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(9, 0);
+      display.println(F("User Info"));
+
+      // Draw Info screen section.
+      display.drawBitmap(0, 16, USER_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
       
       // Show the display buffer on the screen.
       display.display();
@@ -560,6 +579,68 @@ void OLED_Device_Display_Wifi_On (String IPdir) {
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(X_Cursor, 56);
   display.println(IPdir);
+  
+  // Show the display buffer on the screen.
+  display.display();
+}
+
+/**
+  * @brief  This function represent in the information section of the display
+  *         the user info (Name and IMC).
+  *
+  * @param (String) UserName: User name.
+  * @param (float) IMC : user IMC.
+  *
+  * @retval None
+  */
+void OLED_Device_Display_User_Info (String UserName, float IMC) {
+
+  // Clear the display buffer
+  display.clearDisplay();
+
+  // Draw Title screen section.
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(9, 0);
+  display.println(F("User Info"));
+  
+  // Draw Info screen section.
+  display.drawBitmap(0, 16, WIFI_ON_LOGO, WIFI_ICON_WIDTH, WIFI_ICON_HEIGHT, 1);
+
+  // Center Text in info section.
+  uint8_t X_Cursor = 0, bufferLength = 0;
+
+  if (UserName.length( ) < 10) {
+    X_Cursor = ( ( 128 - ((UserName.length( ))*12) ) / 2 ) - 1;
+    bufferLength = UserName.length( );
+  }
+
+  else {
+    UserName = UserName.substring(0, 9);
+
+    X_Cursor = ( ( 128 - ((UserName.length( ))*12) ) / 2 ) - 1;
+    bufferLength = UserName.length( );
+  }
+
+  char UserNameBuffer[bufferLength];
+
+  sprintf(UserNameBuffer, "%s", UserName);
+ 
+  // Print text in Info screen section.
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(X_Cursor, 24);
+  display.println(UserNameBuffer);
+
+  char IMCBuffer[9];
+  
+  sprintf(IMCBuffer, "IMC: %04.1f", IMC);
+ 
+  // Print text in Info screen section.
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(9, 40);
+  display.println(IMCBuffer);
   
   // Show the display buffer on the screen.
   display.display();

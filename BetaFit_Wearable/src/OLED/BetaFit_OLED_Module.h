@@ -145,4 +145,15 @@
       */
     extern void OLED_Device_Display_Wifi_Off (void);
 
+    /**
+      * @brief  This function represent in the information section of the display
+      *         the user info (Name and IMC).
+      *
+      * @param (String) UserName: User name.
+      * @param (float) IMC : user IMC.
+      *
+      * @retval None
+      */
+    extern void OLED_Device_Display_User_Info (String UserName, float IMC);
+
 #endif // __BetaFit_OLED_Module_h
