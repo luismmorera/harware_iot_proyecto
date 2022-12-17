@@ -183,6 +183,28 @@ void BetaFit_Main (void) {
 
     case BETAFIT_MODE_CONF:
         BetaFit_Configuration_Mode_Main ( );
+
+        if (BUTTON_SHORT_PULSE_FLAG) {
+          // Deactivate flag.
+          BUTTON_SHORT_PULSE_FLAG = false;
+
+          // Go to net mode onle if ConfigModeStatus is deactuivated.
+          if (!ConfigModeStatus) BetaFit_Mode = BETAFIT_MODE_USER_INFO;
+        }
+    break;
+
+    case BETAFIT_MODE_CONF:
+      BetaFit_User_Info_Mode_Main ( );
+
+      if (BUTTON_SHORT_PULSE_FLAG) {
+        // Deactivate flag.
+        BUTTON_SHORT_PULSE_FLAG = false;
+
+        BetaFit_Mode = BETAFIT_MODE_CLOCK;
+      }
+
+      // Don't care about long pulsations. Deactivate flag.
+      if (BUTTON_LONG_PULSE_FLAG) BUTTON_LONG_PULSE_FLAG = false;
     break;
 
     default:
@@ -357,7 +379,6 @@ void BetaFit_Heart_Rate_Mode_Main (void) {
     OLED_Device_Display_Measurement_Request(BETAFIT_MODE_HR);
   }
 
-  
   if (BUTTON_LONG_PULSE_FLAG) {
     // Deactivate flag.
     BUTTON_LONG_PULSE_FLAG = false;
@@ -389,15 +410,6 @@ void BetaFit_Configuration_Mode_Main (void) {
 
   if (BetaFit_Mode != Previous_BetaFit_Mode) BetaFit_New_Mode_Begin( );
 
-  if (BUTTON_SHORT_PULSE_FLAG) {
-    // Deactivate flag.
-    BUTTON_SHORT_PULSE_FLAG = false;
-
-    // Go to net mode onle if ConfigModeStatus is deactuivated.
-    if (!ConfigModeStatus) BetaFit_Mode = BETAFIT_MODE_CLOCK;
-    
-  }
-  
   if (BUTTON_LONG_PULSE_FLAG) {
     // Deactivate flag.
     BUTTON_LONG_PULSE_FLAG = false;
@@ -430,6 +442,22 @@ void BetaFit_Configuration_Mode_Main (void) {
 
   // If ConfigModeStatus is true, handle web server.
   if (ConfigModeStatus) webServerLoop( );
+}
+
+/**
+  * @brief This function execute the User Info Mode behavior.
+  *
+  * @retval none.
+  */
+void BetaFit_User_Info_Mode_Main (void) {
+
+  if (BetaFit_Mode != Previous_BetaFit_Mode) {
+    BetaFit_New_Mode_Begin( );
+
+    OLED_Device_Display_User_Info((String) getUserName( ), (float) getUserIMC( ));
+  }
+
+  BetaFit_Position_Management( );
 }
 
 
