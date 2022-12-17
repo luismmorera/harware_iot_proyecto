@@ -56,16 +56,20 @@ void OLED_Device_Diplay_HeartRate   (uint16_t heart_rate);
 void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type);
 void OLED_Device_Display_Measurement_Processing (uint8_t Measurement_Type);
 
+void OLED_Device_Display_Wifi_On (String IPdir);
+void OLED_Device_Display_Wifi_Connecting (void);
+void OLED_Device_Display_Wifi_Off (void);
+
 void centerTextInfoSection  (int buffer_length, uint8_t size_factor);
 
 /* Functions -----------------------------------------------------------------*/
 
 /**
-* @brief  This function initializes the resources necessary for control and 
-*         communication with the OLED module.
-*
-* @retval None
-*/
+  * @brief  This function initializes the resources necessary for control and 
+  *         communication with the OLED module.
+  *
+  * @retval None
+  */
 void OLED_Device_Begin (void) {
   
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
@@ -87,21 +91,21 @@ void OLED_Device_Begin (void) {
 }
 
 /**
-* @brief  This function initializes send the correct command in order to
-*         power off the OLED module.
-*
-* @retval None
-*/
+  * @brief  This function initializes send the correct command in order to
+  *         power off the OLED module.
+  *
+  * @retval None
+  */
 void OLED_Device_PowerOff (void) {
   display.ssd1306_command(0xAE);
 }
 
 /**
-* @brief  This function initializes send the correct command in order to
-*         power on the OLED module.
-*
-* @retval None
-*/
+  * @brief  This function initializes send the correct command in order to
+  *         power on the OLED module.
+  *
+  * @retval None
+  */
 void OLED_Device_PowerOn (void) {
   display.ssd1306_command(0xAF);
 }
@@ -390,7 +394,13 @@ void OLED_Device_Diplay_HeartRate (uint16_t heart_rate) {
   display.display();
 }
 
-
+/**
+  * @brief  This function represent in the display the request meassage for a new measuring process.
+  *
+  * @param (uint8_t) Measurement_Type: type of measuring running (Body Heat or Heart Rate).
+  *
+  * @retval None
+  */
 void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type) {
 
   // Clear the display buffer
@@ -422,8 +432,6 @@ void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type) {
     display.println(F("Press to"));
   }
 
-  
-
   display.setTextSize(2); // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(19, 44);
@@ -433,6 +441,14 @@ void OLED_Device_Display_Measurement_Request (uint8_t Measurement_Type) {
   display.display();
 }
 
+/**
+  * @brief  This function represent in the display that a measuring process
+  *         is running.
+  *
+  * @param (uint8_t) Measurement_Type: type of measuring running (Body Heat or Heart Rate).
+  *
+  * @retval None
+  */
 void OLED_Device_Display_Measurement_Processing (uint8_t Measurement_Type) {
 
   // Clear the display buffer
@@ -448,6 +464,103 @@ void OLED_Device_Display_Measurement_Processing (uint8_t Measurement_Type) {
   if (Measurement_Type == BETAFIT_MODE_BH) display.drawBitmap(0, 16, THERMOMETER_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
   if (Measurement_Type == BETAFIT_MODE_HR) display.drawBitmap(0, 16, HR_LOGO, LOGO_WIDTH, LOGO_HEIGHT, 1);
 
+  // Show the display buffer on the screen.
+  display.display();
+}
+
+/**
+  * @brief  This function represent in the information section of the display
+  *         the wifi disabled icon and 'WiFi Disabled' text.
+  *
+  * @retval None
+  */
+void OLED_Device_Display_Wifi_Off (void) {
+
+  // Clear the display buffer
+  display.clearDisplay();
+
+  // Draw Title screen section.
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(29, 0);
+  display.println(F("Config"));
+  
+  // Draw Info screen section.
+  display.drawBitmap(0, 16, WIFI_OFF_LOGO, WIFI_ICON_WIDTH, WIFI_ICON_HEIGHT, 1);
+
+  // Print text in Info screen section.
+  display.setTextSize(1); // Draw 1X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(25, 40);
+  display.println(F("WiFi Disabled"));
+  
+  // Show the display buffer on the screen.
+  display.display();
+}
+
+
+/**
+  * @brief  This function represent in the information section of the display
+  *         the wifi enabled icon and 'Conecting...' text.
+  *
+  * @retval None
+  */
+void OLED_Device_Display_Wifi_Connecting (void) {
+
+  // Clear the display buffer
+  display.clearDisplay();
+
+  // Draw Title screen section.
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(28, 0);
+  display.println(F("Config"));
+  
+  // Draw Info screen section.
+  display.drawBitmap(0, 16, WIFI_ON_LOGO, WIFI_ICON_WIDTH, WIFI_ICON_HEIGHT, 1);
+
+  // Print text in Info screen section.
+  display.setTextSize(1); // Draw 1X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(28, 40);
+  display.println(F("Conecting..."));
+  
+  // Show the display buffer on the screen.
+  display.display();
+}
+
+
+/**
+  * @brief  This function represent in the information section of the display
+  *         the wifi enabled icon and the IP asigned to the device.
+  *
+  * @param (String) IPdir: IP direcction of the device.
+  *
+  * @retval None
+  */
+void OLED_Device_Display_Wifi_On (String IPdir) {
+
+  // Clear the display buffer
+  display.clearDisplay();
+
+  // Draw Title screen section.
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(28, 0);
+  display.println(F("Config"));
+  
+  // Draw Info screen section.
+  display.drawBitmap(0, 16, WIFI_ON_LOGO, WIFI_ICON_WIDTH, WIFI_ICON_HEIGHT, 1);
+
+  // Center Text in info section.
+  uint8_t X_Cursor = ( 128 - ((IPdir.length( ))*6) ) / 2
+
+  // Print text in Info screen section.
+  display.setTextSize(1); // Draw 1X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(X_Cursor, 40);
+  display.println(IPdir);
+  
   // Show the display buffer on the screen.
   display.display();
 }

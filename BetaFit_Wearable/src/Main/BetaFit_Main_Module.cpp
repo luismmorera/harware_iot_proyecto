@@ -381,10 +381,10 @@ void BetaFit_Heart_Rate_Mode_Main (void) {
 }
 
 /**
-* @brief This function execute the Configuration Mode behavior.
-*
-* @retval none.
-*/
+  * @brief This function execute the Configuration Mode behavior.
+  *
+  * @retval none.
+  */
 void BetaFit_Configuration_Mode_Main (void) {
 
   if (BetaFit_Mode != Previous_BetaFit_Mode) BetaFit_New_Mode_Begin( );
@@ -408,14 +408,23 @@ void BetaFit_Configuration_Mode_Main (void) {
 
       // Turn off WiFi interface and web server.
       wifiConnectionStop( );
+
+      // Display WiFi Off icon.
+      OLED_Device_Display_Wifi_Off( );
     }
 
     else {
       // Update ConfigModeStatus.
       ConfigModeStatus = true;
 
+      // Display WiFi On icon while connecting.
+      OLED_Device_Display_Wifi_Connecting( );
+
       // Turn on WiFi interface and web server.
       wifiConnectionStart(STASSID, STAPSK);
+
+      // Display WiFi On icon and the IP assigned.
+      OLED_Device_Display_Wifi_On(getIP( ));
     }
   }
 
@@ -484,6 +493,12 @@ void BetaFit_Position_Management (void) {
   }
 }
 
+/**
+  * @brief This function get the actual time and format it to a determinated
+  *        time stamp format.
+  *
+  * @retval none.
+  */
 String Get_Actual_TimeStamp (void) {
   char timeStamp[20];
   
